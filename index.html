@@ -254,6 +254,19 @@
 		    });
 		
 		    window.loadCars();
+			document.getElementById("marque").value = "";
+			document.getElementById("modele").value = "";
+			document.getElementById("prix").value = "";
+			document.getElementById("image").value = "";
+			document.getElementById("annee").value = "";
+			document.getElementById("km").value = "";
+			document.getElementById("ville").value = "";
+			document.getElementById("transmission").selectedIndex = 0;
+			document.getElementById("carburant").selectedIndex = 0;
+			document.getElementById("carrosserie").selectedIndex = 0;
+			document.getElementById("couleur").selectedIndex = 0;
+			document.getElementById("sieges").selectedIndex = 0;
+			document.querySelectorAll(".extra").forEach(e => e.checked = false);
 		};
 		// LOAD CARS
 		window.loadCars = async function () {
