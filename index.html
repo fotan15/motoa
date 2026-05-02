@@ -81,7 +81,7 @@
 			text-decoration: none;
 		}
 
-
+<link rel="icon" href="https://picsum.photos/32/32">
     </style>
 </head>
 
@@ -253,8 +253,7 @@
 		            extras
 		        }
 		    });
-		
-		    window.loadCars();
+
 			document.getElementById("marque").value = "";
 			document.getElementById("modele").value = "";
 			document.getElementById("prix").value = "";
@@ -268,7 +267,7 @@
 			document.getElementById("couleur").selectedIndex = 0;
 			document.getElementById("sieges").selectedIndex = 0;
 			document.querySelectorAll(".extra").forEach(e => e.checked = false);
-		};
+			await loadCars();		};
 		
 		// LOAD CARS
 		window.loadCars = async function () {
@@ -292,17 +291,20 @@
 		            <p>💰 ${car.prix} FCFA</p>
 		
 		            <p>📍 ${car.ville || "N/A"} • ${car.annee || "?"}</p>
-		            <p>⚙️ ${car.options.transmission} • ⛽ ${car.options.carburant}</p>
+		           	<p>
+						⚙️ ${car.options?.transmission || "N/A"} • 
+						⛽ ${car.options?.carburant || "N/A"}
+					</p>
 		
 		            <button onclick="toggleDetails('${doc.id}')">
 		                Voir détails
 		            </button>
 		
 		            <div id="details-${doc.id}" style="display:none">
-		                <p>🚗 ${car.options.carrosserie}</p>
-		                <p>🎨 ${car.options.couleur}</p>
-		                <p>🪑 ${car.options.sieges} sièges</p>
-		                <p>⭐ ${car.options.extras.join(", ")}</p>
+		                <p>🚗 ${car.options?.carrosserie || "N/A"}</p>
+						<p>🎨 ${car.options?.couleur || "N/A"}</p>
+						<p>🪑 ${car.options?.sieges || "N/A"} sièges</p>
+						<p>⭐ ${(car.options?.extras || []).join(", ")}</p>
 		            </div>
 		        `;
 		
