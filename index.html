@@ -299,6 +299,16 @@
 			window.loadCars();
 		};
 
+		//
+		window.toggleDetails = function(id) {
+
+		    let el = document.getElementById("details-" + id);
+		
+		    if (!el) return;
+		
+		    el.style.display = (el.style.display === "none") ? "block" : "none";
+		};
+
 	</script>
 
 </body>
