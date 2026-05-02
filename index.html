@@ -15,8 +15,6 @@
             color: white;
             text-align: center;
             padding: 15px;
-            position: sticky;
-            top: 0;
         }
 
         .container {
@@ -67,7 +65,7 @@
 
 <header>
     <h1>Motoa</h1>
-    <p>La voiture facile en Afrique</p>
+    <p>Achat & Vente de voitures</p>
 </header>
 
 <div class="container">
@@ -102,7 +100,6 @@
         <option>SUV</option>
         <option>Citadine</option>
         <option>Coupé</option>
-        <option>Pickup</option>
     </select>
 
     <select id="couleur">
@@ -110,7 +107,6 @@
         <option>Blanc</option>
         <option>Gris</option>
         <option>Bleu</option>
-        <option>Rouge</option>
     </select>
 
     <select id="sieges">
@@ -120,35 +116,32 @@
         <option>7</option>
     </select>
 
-    <label><input type="checkbox" value="ABS" class="extra"> ABS</label>
-    <label><input type="checkbox" value="Bluetooth" class="extra"> Bluetooth</label>
-    <label><input type="checkbox" value="GPS" class="extra"> GPS</label>
-    <label><input type="checkbox" value="Caméra" class="extra"> Caméra</label>
-
     <button onclick="addCar()">Ajouter</button>
 
 </div>
 
 <script type="module">
 
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+import { 
+    getFirestore, 
+    collection, 
+    addDoc, 
+    getDocs 
+} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
+// 🔥 CONFIG FIREBASE (motoaFree)
+const firebaseConfig = {
     apiKey: "AIzaSyBCtuE513iVtDMtAaXNtrpfPbXvWjUTXR4",
     authDomain: "motoafree.firebaseapp.com",
     projectId: "motoafree",
     storageBucket: "motoafree.firebasestorage.app",
     messagingSenderId: "727661050460",
     appId: "1:727661050460:web:72a552bb47b3fe48704499"
-  };
+};
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  //const db = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 // =====================
 // ADD CAR
@@ -159,55 +152,27 @@ window.addCar = async function () {
 
     try {
 
-        let marque = document.getElementById("marque").value || "";
-        let modele = document.getElementById("modele").value || "";
-        let prix = document.getElementById("prix").value || "";
-        let image = document.getElementById("image").value || "";
-        let annee = document.getElementById("annee").value || "";
-        let km = document.getElementById("km").value || "";
-        let ville = document.getElementById("ville").value || "";
-
-        let transmission = document.getElementById("transmission").value;
-        let carburant = document.getElementById("carburant").value;
-        let carrosserie = document.getElementById("carrosserie").value;
-        let couleur = document.getElementById("couleur").value;
-        let sieges = document.getElementById("sieges").value;
-
-        let extras = [];
-        document.querySelectorAll(".extra:checked").forEach(e => {
-            extras.push(e.value);
-        });
+        let marque = document.getElementById("marque").value;
+        let modele = document.getElementById("modele").value;
+        let prix = document.getElementById("prix").value;
+        let image = document.getElementById("image").value;
 
         if (!image) {
             image = "https://picsum.photos/250/150";
         }
 
-        let data = {
+        console.log("Avant addDoc");
+
+        const result = await addDoc(collection(db, "cars"), {
             marque,
             modele,
             prix,
-            image,
-            annee,
-            km,
-            ville,
-            options: {
-                transmission,
-                carburant,
-                carrosserie,
-                couleur,
-                sieges,
-                extras
-            }
-        };
-
-        console.log("DATA:", data);
-        console.log("Avant addDoc");
-
-        const result = await addDoc(collection(db, "cars"), data);
+            image
+        });
 
         console.log("✅ Ajout OK ID:", result.id);
 
-        alert("Voiture ajoutée avec succès 🚗");
+        alert("Voiture ajoutée 🚗");
 
         await loadCars();
 
@@ -216,21 +181,10 @@ window.addCar = async function () {
         document.getElementById("modele").value = "";
         document.getElementById("prix").value = "";
         document.getElementById("image").value = "";
-        document.getElementById("annee").value = "";
-        document.getElementById("km").value = "";
-        document.getElementById("ville").value = "";
-
-        document.getElementById("transmission").selectedIndex = 0;
-        document.getElementById("carburant").selectedIndex = 0;
-        document.getElementById("carrosserie").selectedIndex = 0;
-        document.getElementById("couleur").selectedIndex = 0;
-        document.getElementById("sieges").selectedIndex = 0;
-
-        document.querySelectorAll(".extra").forEach(e => e.checked = false);
 
     } catch (e) {
         console.error("❌ ERREUR:", e);
-        alert("Erreur: " + e.message);
+        alert("Erreur Firebase");
     }
 };
 
@@ -250,8 +204,6 @@ window.loadCars = async function () {
 
         let car = doc.data();
 
-        let options = car.options || {};
-
         let div = document.createElement("div");
         div.className = "car";
 
@@ -259,17 +211,13 @@ window.loadCars = async function () {
             <img src="${car.image}">
             <p><b>${car.marque} ${car.modele}</b></p>
             <p>💰 ${car.prix} FCFA</p>
-            <p>📍 ${car.ville || "N/A"} • ${car.annee || "?"}</p>
-            <p>⚙️ ${options.transmission || "-"} • ⛽ ${options.carburant || "-"}</p>
         `;
 
         container.appendChild(div);
     });
 };
 
-// =====================
 // INIT
-// =====================
 window.onload = function () {
     loadCars();
 };
