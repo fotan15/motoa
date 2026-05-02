@@ -15,6 +15,8 @@
             color: white;
             text-align: center;
             padding: 15px;
+            position: sticky;
+            top: 0;
         }
 
         .container {
@@ -38,6 +40,7 @@
             color: white;
             border: none;
             border-radius: 8px;
+            font-size: 16px;
         }
 
         .car {
@@ -117,10 +120,10 @@
         <option>7</option>
     </select>
 
-    <label><input type="checkbox" class="extra" value="ABS"> ABS</label>
-    <label><input type="checkbox" class="extra" value="Bluetooth"> Bluetooth</label>
-    <label><input type="checkbox" class="extra" value="GPS"> GPS</label>
-    <label><input type="checkbox" class="extra" value="Caméra"> Caméra</label>
+    <label><input type="checkbox" value="ABS" class="extra"> ABS</label>
+    <label><input type="checkbox" value="Bluetooth" class="extra"> Bluetooth</label>
+    <label><input type="checkbox" value="GPS" class="extra"> GPS</label>
+    <label><input type="checkbox" value="Caméra" class="extra"> Caméra</label>
 
     <button onclick="addCar()">Ajouter</button>
 
@@ -129,23 +132,27 @@
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs } 
-from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
-/* 🔥 REMPLACE ICI PAR TON CONFIG FIREBASE */
+import {
+    getFirestore,
+    collection,
+    addDoc,
+    getDocs
+} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+
+// 🔥 CONFIG (remplace si besoin)
 const firebaseConfig = {
-  apiKey: "TON_API_KEY",
-  authDomain: "motoaFree.firebaseapp.com",
-  projectId: "motoaFree",
-  storageBucket: "motoaFree.appspot.com",
-  messagingSenderId: "XXXX",
-  appId: "XXXX"
+    apiKey: "AIzaSyAaUWm...",
+    authDomain: "motoa-c01f7.firebaseapp.com",
+    projectId: "motoa-c01f7"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-/* ================= ADD CAR ================= */
+// =====================
+// ADD CAR
+// =====================
 window.addCar = async function () {
 
     console.log("👉 addCar exécuté");
@@ -160,13 +167,12 @@ window.addCar = async function () {
         let km = document.getElementById("km").value || "";
         let ville = document.getElementById("ville").value || "";
 
-        let transmission = document.getElementById("transmission")?.value || "";
-        let carburant = document.getElementById("carburant")?.value || "";
-        let carrosserie = document.getElementById("carrosserie")?.value || "";
-        let couleur = document.getElementById("couleur")?.value || "";
-        let sieges = document.getElementById("sieges")?.value || "";
+        let transmission = document.getElementById("transmission").value;
+        let carburant = document.getElementById("carburant").value;
+        let carrosserie = document.getElementById("carrosserie").value;
+        let couleur = document.getElementById("couleur").value;
+        let sieges = document.getElementById("sieges").value;
 
-        // extras
         let extras = [];
         document.querySelectorAll(".extra:checked").forEach(e => {
             extras.push(e.value);
@@ -195,7 +201,6 @@ window.addCar = async function () {
         };
 
         console.log("DATA:", data);
-
         console.log("Avant addDoc");
 
         const result = await addDoc(collection(db, "cars"), data);
@@ -207,8 +212,20 @@ window.addCar = async function () {
         await loadCars();
 
         // RESET FORM
-        document.querySelectorAll("input").forEach(i => i.value = "");
-        document.querySelectorAll("select").forEach(s => s.selectedIndex = 0);
+        document.getElementById("marque").value = "";
+        document.getElementById("modele").value = "";
+        document.getElementById("prix").value = "";
+        document.getElementById("image").value = "";
+        document.getElementById("annee").value = "";
+        document.getElementById("km").value = "";
+        document.getElementById("ville").value = "";
+
+        document.getElementById("transmission").selectedIndex = 0;
+        document.getElementById("carburant").selectedIndex = 0;
+        document.getElementById("carrosserie").selectedIndex = 0;
+        document.getElementById("couleur").selectedIndex = 0;
+        document.getElementById("sieges").selectedIndex = 0;
+
         document.querySelectorAll(".extra").forEach(e => e.checked = false);
 
     } catch (e) {
@@ -217,7 +234,9 @@ window.addCar = async function () {
     }
 };
 
-/* ================= LOAD ================= */
+// =====================
+// LOAD CARS
+// =====================
 window.loadCars = async function () {
 
     let container = document.getElementById("carList");
@@ -231,6 +250,8 @@ window.loadCars = async function () {
 
         let car = doc.data();
 
+        let options = car.options || {};
+
         let div = document.createElement("div");
         div.className = "car";
 
@@ -239,42 +260,16 @@ window.loadCars = async function () {
             <p><b>${car.marque} ${car.modele}</b></p>
             <p>💰 ${car.prix} FCFA</p>
             <p>📍 ${car.ville || "N/A"} • ${car.annee || "?"}</p>
-            <p>
-              ⚙️ ${car.options?.transmission || "N/A"} • 
-              ⛽ ${car.options?.carburant || "N/A"}
-            </p>
-            <p>
-              🚗 ${car.options?.carrosserie || "N/A"} • 
-              🎨 ${car.options?.couleur || "N/A"} • 
-              🪑 ${car.options?.sieges || "N/A"}
-            </p>
+            <p>⚙️ ${options.transmission || "-"} • ⛽ ${options.carburant || "-"}</p>
         `;
 
         container.appendChild(div);
     });
 };
 
-/* ================= CLEAR FORM ================= */
-function clearForm() {
-
-    document.getElementById("marque").value = "";
-    document.getElementById("modele").value = "";
-    document.getElementById("prix").value = "";
-    document.getElementById("image").value = "";
-    document.getElementById("annee").value = "";
-    document.getElementById("km").value = "";
-    document.getElementById("ville").value = "";
-
-    document.getElementById("transmission").selectedIndex = 0;
-    document.getElementById("carburant").selectedIndex = 0;
-    document.getElementById("carrosserie").selectedIndex = 0;
-    document.getElementById("couleur").selectedIndex = 0;
-    document.getElementById("sieges").selectedIndex = 0;
-
-    document.querySelectorAll(".extra").forEach(e => e.checked = false);
-}
-
-/* ================= INIT ================= */
+// =====================
+// INIT
+// =====================
 window.onload = function () {
     loadCars();
 };
