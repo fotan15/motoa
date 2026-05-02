@@ -194,12 +194,8 @@
 
 		import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 
-		import { 
-		  getFirestore, 
-		  collection, 
-		  addDoc, 
-		  getDocs 
-		} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+		import { getFirestore, collection, addDoc, getDocs } 
+		from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
 		const firebaseConfig = {
 		  apiKey: "AIzaSyAaUWm...",
@@ -248,7 +244,10 @@
 		
 		        // 🔥 IMPORTANT : capture du document créé
 		        const result = await addDoc(collection(db, "cars"), {
-		            marque,
+					marque: "TEST",
+					modele: "TEST",
+					prix: "1000"
+				   <!-- marque,
 		            modele,
 		            prix,
 		            image,
@@ -262,7 +261,7 @@
 		                couleur,
 		                sieges,
 		                extras
-		            }
+		            } -->
 		        });
 		
 		        console.log("✔ DOC ID:", result.id);
