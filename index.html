@@ -231,6 +231,7 @@
 		        let couleur = document.getElementById("couleur").value;
 		        let sieges = document.getElementById("sieges").value;
 		
+		        // extras (checkbox)
 		        let extras = [];
 		        document.querySelectorAll(".extra:checked").forEach(e => {
 		            extras.push(e.value);
@@ -240,7 +241,8 @@
 		
 		        console.log("Avant addDoc");
 		
-		        await addDoc(collection(db, "cars"), {
+		        // 🔥 IMPORTANT : capture du document créé
+		        const result = await addDoc(collection(db, "cars"), {
 		            marque,
 		            modele,
 		            prix,
@@ -258,12 +260,14 @@
 		            }
 		        });
 		
-		        console.log("Ajout OK");
+		        console.log("✔ DOC ID:", result.id);
 		
-		        // ⚠️ IMPORTANT : on attend seulement la DB
+		        // 🔄 rechargement des voitures
 		        await loadCars();
 		
-		        // ✅ RESET IMMÉDIAT (sans dépendre de loadCars)
+		        console.log("✔ loadCars OK");
+		
+		        // 🧼 RESET FORMULAIRE (après succès)
 		        document.getElementById("marque").value = "";
 		        document.getElementById("modele").value = "";
 		        document.getElementById("prix").value = "";
@@ -280,12 +284,11 @@
 		
 		        document.querySelectorAll(".extra").forEach(e => e.checked = false);
 		
+		        // 🎯 feedback utilisateur
 		        alert("Voiture ajoutée avec succès 🚗");
 		
-		        console.log("Form reset OK");
-		
 		    } catch (e) {
-		        console.error("ERREUR ADDCAR:", e);
+		        console.error("❌ ERREUR addCar:", e);
 		    }
 		};
 		
