@@ -290,9 +290,8 @@
 		
 		// LOAD CARS
 		window.loadCars = async function () {
-			alert("Voiture ajoutée avec succès 🚗");
 
-		    let container = document.getElementById("carList");
+			let container = document.getElementById("carList");
 		    container.innerHTML = "";
 		
 		    const snapshot = await getDocs(collection(db, "cars"));
@@ -330,6 +329,8 @@
 		
 		        container.appendChild(div);
 		    });
+			alert("Voiture ajoutée avec succès 🚗");
+
 		};
 		
 		// INIT
