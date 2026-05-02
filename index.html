@@ -150,11 +150,6 @@
 		<input id="km" placeholder="Kilométrage (ex: 120000)">
 		<input id="ville" placeholder="Ville (Douala, Yaoundé...)">
 
-		<select id="carburant">
-			<option value="Essence">Essence</option>
-			<option value="Diesel">Diesel</option>
-		</select>
-
 		<select id="transmission">
 			<option value="Manuelle">Manuelle</option>
 			<option value="Automatique">Automatique</option>
@@ -179,7 +174,7 @@
 			<option>Bleu</option>
 			<option>Rouge</option>
 		</select>
-		<select id="Nombre de sieges">
+		<select id="sieges">
 			<option>2</option>
 			<option>4</option>
 			<option>5</option>
@@ -194,84 +189,39 @@
 
 	</div>
 		
-	<script>
+
+	<script type="module">
+
+		import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+
+		import { 
+		  getFirestore, 
+		  collection, 
+		  addDoc, 
+		  getDocs 
+		} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+
+		const firebaseConfig = {
+		  apiKey: "AIzaSyAaUWm-yN_dOEDZEvaAqXCYPcp5ABWF_yY",
+		  authDomain: "motoa-c01f7.firebaseapp.com",
+		  projectId: "motoa-c01f7",
+		  storageBucket: "motoa-c01f7.firebasestorage.app",
+		  messagingSenderId: "303638072653",
+		  appId: "1:303638072653:web:48122c011e9c7e0633bb04"
+		};
+
+		const app = initializeApp(firebaseConfig);
+		const db = getFirestore(app);
 
 		// =====================
-		// 📦 DATA (données)
+		// ADD CAR
 		// =====================
-		//let cars = JSON.parse(localStorage.getItem("cars")) || [];
-
-		// =====================
-		// 🖥️ UI (affichage)
-		// =====================
-		function renderCars() {
-
-			let container = document.getElementById("carList");
-			container.innerHTML = "";
-
-			cars.forEach((car, index) => {
-
-				let div = document.createElement("div");
-				div.className = "car";
-
-				div.innerHTML = `
-					<img src="${car.image}" onerror="this.src='https://picsum.photos/250/150'">
-
-					<div style="padding:10px">
-
-						<h3>${car.marque} ${car.modele}</h3>
-
-						<p style="font-size:18px; font-weight:bold; color:#007BFF;">
-							💰 ${car.prix} FCFA
-						</p>
-
-						<p style="font-size:14px; color:gray;">
-							⚙️ ${car.options.transmission} • ⛽ ${car.options.carburant}
-						</p>
-
-						<button onclick="toggleDetails(${index})">
-							🔽 Voir détails
-						</button>
-
-						<div id="details-${index}" style="display:none; margin-top:10px; font-size:14px;">
-
-							<p>🚗 ${car.options.carrosserie}</p>
-							<p>🎨 ${car.options.couleur}</p>
-							<p>🪑 ${car.options.sieges} places</p>
-							<p>⭐ ${car.options.extras.join(", ")}</p>
-
-						</div>
-
-						<a href="https://wa.me/237XXXXXXXXX?text=Je suis intéressé par ${car.marque} ${car.modele}">
-							📲 Contacter sur WhatsApp
-						</a>
-
-						<button class="btn-danger" onclick="deleteCar(${index})">
-							❌ Supprimer
-						</button>
-
-					</div>
-				`;
-
-				container.appendChild(div);
-			});
-		}
-
-		// =====================
-		// ⚙️ LOGIC (actions)
-		// =====================
-		
-		async function addCar() {
+		window.addCar = async function () {
 
 			let marque = document.getElementById("marque").value;
 			let modele = document.getElementById("modele").value;
 			let prix = document.getElementById("prix").value;
 			let image = document.getElementById("image").value;
-
-			if (!marque || !modele || !prix) {
-				alert("Remplis tous les champs");
-				return;
-			}
 
 			if (!image) {
 				image = "https://picsum.photos/250/150";
@@ -281,175 +231,47 @@
 				marque,
 				modele,
 				prix,
-				image,
-				createdAt: Date.now()
+				image
 			});
 
 			loadCars();
-		}
+		};
 
 		// =====================
-		// ❌ DELETE
+		// LOAD CARS
 		// =====================
-		function deleteCar(index) {
-
-			cars.splice(index, 1);
-
-			saveData();
-			renderCars();
-		}
-
-		// =====================
-		// 💾 STORAGE
-		// =====================
-		//function saveData() {
-		//	localStorage.setItem("cars", JSON.stringify(cars));
-		//}
-
-		// =====================
-		// 🚀 INIT
-		// =====================
-		window.onload = function () {
-				loadCars();
-			};
-			
-		// =====================
-		// 🚀 Filtrer
-		// =====================
-		function filterCars() {
-
-			let search = document.getElementById("search").value.toLowerCase();
-			let maxPrice = document.getElementById("maxPrice").value;
-
-			let transmission = document.getElementById("filterTransmission").value;
-			let carburant = document.getElementById("filterCarburant").value;
-			let carrosserie = document.getElementById("filterCarrosserie").value;
-			let couleur = document.getElementById("filterCouleur").value;
-
-			let container = document.getElementById("carList");
-			container.innerHTML = "";
-
-			cars.forEach((car, index) => {
-
-				let matchSearch = (car.marque + " " + car.modele).toLowerCase().includes(search);
-
-				let matchPrice = !maxPrice || parseInt(car.prix) <= parseInt(maxPrice);
-
-				let matchTransmission = !transmission || car.options.transmission === transmission;
-				let matchCarburant = !carburant || car.options.carburant === carburant;
-				let matchCarrosserie = !carrosserie || car.options.carrosserie === carrosserie;
-				let matchCouleur = !couleur || car.options.couleur === couleur;
-
-				if (matchSearch && matchPrice && matchTransmission && matchCarburant && matchCarrosserie && matchCouleur) {
-
-					let div = document.createElement("div");
-					div.className = "car";
-
-					div.innerHTML = `
-						<img src="${car.image}" width="100%" onerror="this.src='https://picsum.photos/250/150'">
-
-						<p><b>${car.marque} ${car.modele}</b></p>
-						<p>💰 ${car.prix} FCFA</p>
-
-						<p>⚙️ ${car.options.transmission}</p>
-						<p>⛽ ${car.options.carburant}</p>
-						<p>🚗 ${car.options.carrosserie}</p>
-
-						<a href="https://wa.me/237XXXXXXXXX?text=Je suis intéressé par ${car.marque} ${car.modele}">
-							📲 WhatsApp
-						</a>
-
-						<br><br>
-
-						<button onclick="deleteCar(${index})">❌ Supprimer</button>
-					`;
-
-					container.appendChild(div);
-				}
-			});
-		}
-		
-		// =====================
-		// 🚀 RESET Filtrer
-		// =====================
-		function resetFilter() {
-			document.getElementById("search").value = "";
-			document.getElementById("maxPrice").value = "";
-			renderCars();
-		}
-		
-		
-		function toggleDetails(index) {
-
-			let el = document.getElementById("details-" + index);
-
-			if (el.style.display === "none") {
-				el.style.display = "block";
-			} else {
-				el.style.display = "none";
-			}
-		}
-		
 		async function loadCars() {
 
 			let container = document.getElementById("carList");
 			container.innerHTML = "";
 
-			const querySnapshot = await getDocs(collection(db, "cars"));
+			const snapshot = await getDocs(collection(db, "cars"));
 
-			querySnapshot.forEach((docItem) => {
+			snapshot.forEach((doc) => {
 
-				let car = docItem.data();
+				let car = doc.data();
 
 				let div = document.createElement("div");
 				div.className = "car";
 
 				div.innerHTML = `
-					<img src="${car.image}" width="100%" onerror="this.src='https://picsum.photos/250/150'">
-
+					<img src="${car.image}" width="100%">
 					<p><b>${car.marque} ${car.modele}</b></p>
 					<p>💰 ${car.prix} FCFA</p>
-
-					<a href="https://wa.me/237XXXXXXXXX?text=Je suis intéressé par ${car.marque} ${car.modele}">
-						📲 WhatsApp
-					</a>
 				`;
 
 				container.appendChild(div);
 			});
 		}
-		
-		<script type="module">
 
-			import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-
-			import { 
-			  getFirestore, 
-			  collection, 
-			  addDoc, 
-			  getDocs, 
-			  deleteDoc, 
-			  doc 
-			} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
-
-			const firebaseConfig = {
-			  apiKey: "AIzaSyAaUWm-yN_dOEDZEvaAqXCYPcp5ABWF_yY",
-			  authDomain: "motoa-c01f7.firebaseapp.com",
-			  projectId: "motoa-c01f7",
-			  storageBucket: "motoa-c01f7.firebasestorage.app",
-			  messagingSenderId: "303638072653",
-			  appId: "1:303638072653:web:48122c011e9c7e0633bb04"
-			};
-
-			const app = initializeApp(firebaseConfig);
-			const db = getFirestore(app);
+		// =====================
+		// INIT
+		// =====================
+		window.onload = function () {
+			loadCars();
+		};
 
 	</script>
-
-	</script>
-	
-	
-
 
 </body>
 </html>
