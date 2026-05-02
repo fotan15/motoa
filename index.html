@@ -1,143 +1,78 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Motoa - Marketplace Auto</title>
+  <title>Motoa - Marketplace Auto</title>
 
-    <style>
-        body {
-            font-family: Arial;
-            background: #f0f2f5;
-            margin: 0;
-        }
+  <style>
+    body { font-family: Arial; background:#f0f2f5; margin:0; }
+    header { background:#007BFF; color:white; text-align:center; padding:15px; position:sticky; top:0; }
+    .container { width:95%; margin:auto; }
 
-        header {
-            background: #007BFF;
-            color: white;
-            text-align: center;
-            padding: 15px;
-        }
+    input, select {
+      width:100%; padding:12px; margin:5px 0;
+      border-radius:8px; border:1px solid #ccc;
+    }
 
-        .container {
-            width: 95%;
-            margin: auto;
-        }
+    button {
+      width:100%; padding:12px; margin:5px 0;
+      background:#007BFF; color:white;
+      border:none; border-radius:8px;
+    }
 
-        input, select {
-            width: 100%;
-            padding: 12px;
-            margin: 5px 0;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-        }
+    .car {
+      background:white; margin:10px 0;
+      border-radius:12px; overflow:hidden;
+      box-shadow:0 2px 5px rgba(0,0,0,0.1);
+      padding:10px;
+    }
 
-        button {
-            width: 100%;
-            padding: 12px;
-            margin: 5px 0;
-            background: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-        }
-
-        .car {
-            background: white;
-            margin: 10px 0;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .car img {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
-        }
-
-        .car p {
-            margin: 8px;
-        }
-    </style>
+    .car img { width:100%; height:180px; object-fit:cover; }
+  </style>
 </head>
 
 <body>
 
 <header>
-    <h1>Motoa</h1>
-    <p>Achat & Vente de voitures</p>
+  <h1>Motoa</h1>
+  <p>Achat et vente de voitures</p>
 </header>
 
 <div class="container">
 
-    <h2>🚗 Voitures</h2>
-    <div id="carList"></div>
+  <h2>Ajouter une voiture</h2>
 
-    <h2>📤 Ajouter une voiture</h2>
+  <input id="marque" placeholder="Marque">
+  <input id="modele" placeholder="Modèle">
+  <input id="prix" placeholder="Prix">
+  <input id="image" placeholder="Image URL">
 
-    <input id="marque" placeholder="Marque">
-    <input id="modele" placeholder="Modèle">
-    <input id="prix" placeholder="Prix">
-    <input id="image" placeholder="Image URL">
-    <input id="annee" placeholder="Année">
-    <input id="km" placeholder="Kilométrage">
-    <input id="ville" placeholder="Ville">
+  <select id="transmission">
+    <option>Manuelle</option>
+    <option>Automatique</option>
+    <option>Semi-automatique</option>
+  </select>
 
-    <select id="transmission">
-        <option>Manuelle</option>
-        <option>Automatique</option>
-        <option>Semi-automatique</option>
-    </select>
+  <button onclick="addCar()">Ajouter</button>
 
-    <select id="carburant">
-        <option>Essence</option>
-        <option>Diesel</option>
-        <option>Électrique</option>
-    </select>
-
-    <select id="carrosserie">
-        <option>Berline</option>
-        <option>SUV</option>
-        <option>Citadine</option>
-        <option>Coupé</option>
-    </select>
-
-    <select id="couleur">
-        <option>Noir</option>
-        <option>Blanc</option>
-        <option>Gris</option>
-        <option>Bleu</option>
-    </select>
-
-    <select id="sieges">
-        <option>2</option>
-        <option>4</option>
-        <option>5</option>
-        <option>7</option>
-    </select>
-
-    <button onclick="addCar()">Ajouter</button>
+  <h2>Voitures</h2>
+  <div id="carList"></div>
 
 </div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-import { 
-    getFirestore, 
-    collection, 
-    addDoc, 
-    getDocs 
-} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs } 
+from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
-// 🔥 CONFIG FIREBASE (motoaFree)
+// 🔥 Firebase config (TON PROJET motoaFree)
 const firebaseConfig = {
-    apiKey: "AIzaSyBCtuE513iVtDMtAaXNtrpfPbXvWjUTXR4",
-    authDomain: "motoafree.firebaseapp.com",
-    projectId: "motoafree",
-    storageBucket: "motoafree.firebasestorage.app",
-    messagingSenderId: "727661050460",
-    appId: "1:727661050460:web:72a552bb47b3fe48704499"
+  apiKey: "AIzaSyBCtuE513iVtDMtAaXNtrpfPbXvWjUTXR4",
+  authDomain: "motoafree.firebaseapp.com",
+  projectId: "motoafree",
+  storageBucket: "motoafree.firebasestorage.app",
+  messagingSenderId: "727661050460",
+  appId: "1:727661050460:web:72a552bb47b3fe48704499"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -148,44 +83,38 @@ const db = getFirestore(app);
 // =====================
 window.addCar = async function () {
 
-    console.log("👉 addCar exécuté");
+  console.log("👉 addCar exécuté");
 
-    try {
+  try {
 
-        let marque = document.getElementById("marque").value;
-        let modele = document.getElementById("modele").value;
-        let prix = document.getElementById("prix").value;
-        let image = document.getElementById("image").value;
+    const marque = document.getElementById("marque").value;
+    const modele = document.getElementById("modele").value;
+    const prix = document.getElementById("prix").value;
+    let image = document.getElementById("image").value;
 
-        if (!image) {
-            image = "https://picsum.photos/250/150";
-        }
+    if (!image) image = "https://picsum.photos/250/150";
 
-        console.log("Avant addDoc");
+    await addDoc(collection(db, "cars"), {
+      marque,
+      modele,
+      prix,
+      image,
+      createdAt: Date.now()
+    });
 
-        const result = await addDoc(collection(db, "cars"), {
-            marque,
-            modele,
-            prix,
-            image
-        });
+    // 🔥 IMPORTANT : reset champs
+    document.getElementById("marque").value = "";
+    document.getElementById("modele").value = "";
+    document.getElementById("prix").value = "";
+    document.getElementById("image").value = "";
 
-        console.log("✅ Ajout OK ID:", result.id);
+    alert("Voiture ajoutée avec succès 🚗");
 
-        alert("Voiture ajoutée 🚗");
+    loadCars();
 
-        await loadCars();
-
-        // RESET FORM
-        document.getElementById("marque").value = "";
-        document.getElementById("modele").value = "";
-        document.getElementById("prix").value = "";
-        document.getElementById("image").value = "";
-
-    } catch (e) {
-        console.error("❌ ERREUR:", e);
-        alert("Erreur Firebase");
-    }
+  } catch (e) {
+    console.error("ERREUR:", e);
+  }
 };
 
 // =====================
@@ -193,33 +122,33 @@ window.addCar = async function () {
 // =====================
 window.loadCars = async function () {
 
-    let container = document.getElementById("carList");
-    container.innerHTML = "";
+  const container = document.getElementById("carList");
+  container.innerHTML = "";
 
-    const snapshot = await getDocs(collection(db, "cars"));
+  const snapshot = await getDocs(collection(db, "cars"));
 
-    console.log("Cars reçues:", snapshot.size);
+  console.log("Cars reçues:", snapshot.size);
 
-    snapshot.forEach((doc) => {
+  snapshot.forEach((doc) => {
 
-        let car = doc.data();
+    const car = doc.data();
 
-        let div = document.createElement("div");
-        div.className = "car";
+    const div = document.createElement("div");
+    div.className = "car";
 
-        div.innerHTML = `
-            <img src="${car.image}">
-            <p><b>${car.marque} ${car.modele}</b></p>
-            <p>💰 ${car.prix} FCFA</p>
-        `;
+    div.innerHTML = `
+      <img src="${car.image}">
+      <h3>${car.marque} ${car.modele}</h3>
+      <p>💰 ${car.prix} FCFA</p>
+    `;
 
-        container.appendChild(div);
-    });
+    container.appendChild(div);
+  });
 };
 
 // INIT
 window.onload = function () {
-    loadCars();
+  loadCars();
 };
 
 </script>
