@@ -4,84 +4,62 @@
     <title>Motoa - Marketplace Auto</title>
 
     <style>
-       
-		body {
-			font-family: Arial;
-			background: #f0f2f5;
-			margin: 0;
-		}
+        body {
+            font-family: Arial;
+            background: #f0f2f5;
+            margin: 0;
+        }
 
-		header {
-			background: #007BFF;
-			color: white;
-			text-align: center;
-			padding: 15px;
-			position: sticky;
-			top: 0;
-		}
+        header {
+            background: #007BFF;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            position: sticky;
+            top: 0;
+        }
 
-		.container {
-			width: 95%;
-			margin: auto;
-		}
+        .container {
+            width: 95%;
+            margin: auto;
+        }
 
-		/* 🔍 recherche */
-		input {
-			width: 100%;
-			padding: 12px;
-			margin: 5px 0;
-			border-radius: 8px;
-			border: 1px solid #ccc;
-		}
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin: 5px 0;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
 
-		/* boutons */
-		button {
-			width: 100%;
-			padding: 12px;
-			margin: 5px 0;
-			background: #007BFF;
-			color: white;
-			border: none;
-			border-radius: 8px;
-			font-size: 16px;
-		}
+        button {
+            width: 100%;
+            padding: 12px;
+            margin: 5px 0;
+            background: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+        }
 
-		.btn-danger {
-			background: red;
-		}
+        .car {
+            background: white;
+            margin: 10px 0;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
 
-		/* carte voiture */
-		.car {
-			background: white;
-			margin: 10px 0;
-			border-radius: 12px;
-			overflow: hidden;
-			box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-		}
+        .car img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
 
-		.car img {
-			width: 100%;
-			height: 180px;
-			object-fit: cover;
-		}
-
-		.car p {
-			margin: 8px;
-			font-size: 16px;
-		}
-
-		.car a {
-			display: block;
-			margin: 8px;
-			padding: 10px;
-			background: #25D366;
-			color: white;
-			text-align: center;
-			border-radius: 8px;
-			text-decoration: none;
-		}
-
-<link rel="icon" href="https://picsum.photos/32/32">
+        .car p {
+            margin: 8px;
+        }
     </style>
 </head>
 
@@ -92,269 +70,185 @@
     <p>La voiture facile en Afrique</p>
 </header>
 
-	<div class="container">
+<div class="container">
 
-		<h2>🚗 Voitures</h2>
-		<input id="search" placeholder="🔍 Rechercher (Toyota, BMW...)">
+    <h2>🚗 Voitures</h2>
 
-		<input id="maxPrice" placeholder="💰 Prix max">
-		
-		
-		<select id="filterTransmission">
-			<option value="">Transmission (Tous)</option>
-			<option value="Manuelle">Manuelle</option>
-			<option value="Automatique">Automatique</option>
-			<option value="Semi-automatique">Semi-automatique</option>
-		</select>
-		
-		<select id="filterCarburant">
-			<option value="">Carburant (Tous)</option>
-			<option>Essence</option>
-			<option>Diesel</option>
-			<option>Électrique</option>
-		</select>
-		
-		<select id="filterCarrosserie">
-			<option value="">Carrosserie (Toutes)</option>
-			<option>Berline</option>
-			<option>SUV</option>
-			<option>Citadine</option>
-			<option>Coupé</option>
-			<option>Pickup</option>
-		</select>
-		
-		<select id="filterCouleur">
-			<option value="">Couleur (Toutes)</option>
-			<option>Noir</option>
-			<option>Blanc</option>
-			<option>Gris</option>
-			<option>Bleu</option>
-			<option>Rouge</option>
-		</select>
-		
-		
-		
+    <div id="carList"></div>
 
-		<button onclick="filterCars()">Filtrer</button>
-		<button onclick="resetFilter()">Reset</button>
+    <h2>📤 Ajouter une voiture</h2>
 
-		<div id="carList"></div>
+    <input id="marque" placeholder="Marque">
+    <input id="modele" placeholder="Modèle">
+    <input id="prix" placeholder="Prix">
+    <input id="image" placeholder="Image URL">
+    <input id="annee" placeholder="Année">
+    <input id="km" placeholder="Kilométrage">
+    <input id="ville" placeholder="Ville">
 
-		<h2>📤 Ajouter une voiture</h2>
+    <select id="transmission">
+        <option>Manuelle</option>
+        <option>Automatique</option>
+        <option>Semi-automatique</option>
+    </select>
 
-		<input id="marque" placeholder="Marque">
-		<input id="modele" placeholder="Modèle">
-		<input id="prix" placeholder="Prix">
-		<input id="image" placeholder="Image URL">
-		<input id="annee" placeholder="Année (ex: 2018)">
-		<input id="km" placeholder="Kilométrage (ex: 120000)">
-		<input id="ville" placeholder="Ville (Douala, Yaoundé...)">
+    <select id="carburant">
+        <option>Essence</option>
+        <option>Diesel</option>
+        <option>Électrique</option>
+    </select>
 
-		<select id="transmission">
-			<option value="Manuelle">Manuelle</option>
-			<option value="Automatique">Automatique</option>
-			<option value="Semi-automatique">Semi-automatique</option>
-		</select>
-		<select id="carburant">
-			<option>Essence</option>
-			<option>Diesel</option>
-			<option>Électrique</option>
-		</select>
-		<select id="carrosserie">
-			<option>Berline</option>
-			<option>SUV</option>
-			<option>Citadine</option>
-			<option>Coupé</option>
-			<option>Pickup</option>
-		</select>
-		<select id="couleur">
-			<option>Noir</option>
-			<option>Blanc</option>
-			<option>Gris</option>
-			<option>Bleu</option>
-			<option>Rouge</option>
-		</select>
-		<select id="sieges">
-			<option>2</option>
-			<option>4</option>
-			<option>5</option>
-			<option>7</option>
-		</select>
-		<label><input type="checkbox" value="ABS" class="extra"> ABS</label>
-		<label><input type="checkbox" value="Bluetooth" class="extra"> Bluetooth</label>
-		<label><input type="checkbox" value="GPS" class="extra"> GPS</label>
-		<label><input type="checkbox" value="Caméra" class="extra"> Caméra</label>
+    <select id="carrosserie">
+        <option>Berline</option>
+        <option>SUV</option>
+        <option>Citadine</option>
+        <option>Coupé</option>
+        <option>Pickup</option>
+    </select>
 
-		<button onclick="addCar()">Ajouter</button>
+    <select id="couleur">
+        <option>Noir</option>
+        <option>Blanc</option>
+        <option>Gris</option>
+        <option>Bleu</option>
+        <option>Rouge</option>
+    </select>
 
-	</div>
-		
+    <select id="sieges">
+        <option>2</option>
+        <option>4</option>
+        <option>5</option>
+        <option>7</option>
+    </select>
 
-	<script type="module">
+    <label><input type="checkbox" class="extra" value="ABS"> ABS</label>
+    <label><input type="checkbox" class="extra" value="Bluetooth"> Bluetooth</label>
+    <label><input type="checkbox" class="extra" value="GPS"> GPS</label>
+    <label><input type="checkbox" class="extra" value="Caméra"> Caméra</label>
 
-		import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+    <button onclick="addCar()">Ajouter</button>
 
-		import { getFirestore, collection, addDoc, getDocs } 
-		from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+</div>
 
-		const firebaseConfig = {
-		  apiKey: "AIzaSyAaUWm...",
-		  authDomain: "motoa-c01f7.firebaseapp.com",
-		  projectId: "motoa-c01f7"
-		};
+<!-- FIREBASE -->
+<script type="module">
 
-		const app = initializeApp(firebaseConfig);
-		const db = getFirestore(app);
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs } 
+from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
-		// ADD CAR
-		window.addCar = async function () {
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "motoaFree.firebaseapp.com",
+    projectId: "motoaFree"
+};
 
-		    console.log("👉 addCar exécuté");
-		
-		    try {
-		
-		        let marque = document.getElementById("marque").value;
-		        let modele = document.getElementById("modele").value;
-		        let prix = document.getElementById("prix").value;
-		        let image = document.getElementById("image").value;
-		        let annee = document.getElementById("annee").value;
-		        let km = document.getElementById("km").value;
-		        let ville = document.getElementById("ville").value;
-		
-		        let transmission = document.getElementById("transmission").value;
-		        let carburant = document.getElementById("carburant").value;
-		        let carrosserie = document.getElementById("carrosserie").value;
-		        let couleur = document.getElementById("couleur").value;
-		        let sieges = document.getElementById("sieges").value;
-		
-		        // extras (checkbox)
-		        let extras = [];
-		        document.querySelectorAll(".extra:checked").forEach(e => {
-		            extras.push(e.value);
-		        });
-		
-		        if (!image) image = "https://picsum.photos/250/150";
-				
-				console.log("TEST DATA:", {
-					marque,
-					modele,
-					prix
-				});
-		        console.log("Avant addDoc");
-		
-		        // 🔥 IMPORTANT : capture du document créé
-		        const result = await addDoc(collection(db, "cars"), {
-					marque: "TEST",
-					modele: "TEST",
-					prix: "1000"
-				   <!-- marque,
-		            modele,
-		            prix,
-		            image,
-		            annee,
-		            km,
-		            ville,
-		            options: {
-		                transmission,
-		                carburant,
-		                carrosserie,
-		                couleur,
-		                sieges,
-		                extras
-		            } -->
-		        });
-		
-		        console.log("✔ DOC ID:", result.id);
-		
-		        // 🔄 rechargement des voitures
-		        await loadCars();
-		
-		        console.log("✔ loadCars OK");
-		
-		        // 🧼 RESET FORMULAIRE (après succès)
-		        document.getElementById("marque").value = "";
-		        document.getElementById("modele").value = "";
-		        document.getElementById("prix").value = "";
-		        document.getElementById("image").value = "";
-		        document.getElementById("annee").value = "";
-		        document.getElementById("km").value = "";
-		        document.getElementById("ville").value = "";
-		
-		        document.getElementById("transmission").selectedIndex = 0;
-		        document.getElementById("carburant").selectedIndex = 0;
-		        document.getElementById("carrosserie").selectedIndex = 0;
-		        document.getElementById("couleur").selectedIndex = 0;
-		        document.getElementById("sieges").selectedIndex = 0;
-		
-		        document.querySelectorAll(".extra").forEach(e => e.checked = false);
-		
-		        // 🎯 feedback utilisateur
-		        alert("Voiture ajoutée avec succès 🚗");
-		
-		    } catch (e) {
-		        console.error("❌ ERREUR addCar:", e);
-		    }
-		};
-		
-		// LOAD CARS
-		window.loadCars = async function () {
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-			let container = document.getElementById("carList");
-		    container.innerHTML = "";
-		
-		    const snapshot = await getDocs(collection(db, "cars"));
-		
-		    snapshot.forEach((doc) => {
-		
-		        let car = doc.data();
-		
-		        let div = document.createElement("div");
-		        div.className = "car";
-		
-		        div.innerHTML = `
-		            <img src="${car.image}" width="100%">
-		
-		            <p><b>${car.marque} ${car.modele}</b></p>
-		            <p>💰 ${car.prix} FCFA</p>
-		
-		            <p>📍 ${car.ville || "N/A"} • ${car.annee || "?"}</p>
-		           	<p>
-						⚙️ ${car.options?.transmission || "N/A"} • 
-						⛽ ${car.options?.carburant || "N/A"}
-					</p>
-		
-		            <button onclick="toggleDetails('${doc.id}')">
-		                Voir détails
-		            </button>
-		
-		            <div id="details-${doc.id}" style="display:none">
-		                <p>🚗 ${car.options?.carrosserie || "N/A"}</p>
-						<p>🎨 ${car.options?.couleur || "N/A"}</p>
-						<p>🪑 ${car.options?.sieges || "N/A"} sièges</p>
-						<p>⭐ ${(car.options?.extras || []).join(", ")}</p>
-		            </div>
-		        `;
-		
-		        container.appendChild(div);
-		    });
-		};
-		
-		// INIT
-		window.onload = function () {
-			window.loadCars();
-		};
+let cars = [];
 
-		//
-		window.toggleDetails = function(id) {
+/* =========================
+   ADD CAR
+========================= */
+window.addCar = async function () {
 
-		    let el = document.getElementById("details-" + id);
-		
-		    if (!el) return;
-		
-		    el.style.display = (el.style.display === "none") ? "block" : "none";
-		};
+    console.log("👉 addCar exécuté");
 
-	</script>
+    try {
+
+        let extras = [];
+        document.querySelectorAll(".extra:checked").forEach(e => {
+            extras.push(e.value);
+        });
+
+        const data = {
+            marque: document.getElementById("marque").value,
+            modele: document.getElementById("modele").value,
+            prix: document.getElementById("prix").value,
+            image: document.getElementById("image").value || "https://picsum.photos/250/150",
+            annee: document.getElementById("annee").value,
+            km: document.getElementById("km").value,
+            ville: document.getElementById("ville").value,
+            options: {
+                transmission: document.getElementById("transmission").value,
+                carburant: document.getElementById("carburant").value,
+                carrosserie: document.getElementById("carrosserie").value,
+                couleur: document.getElementById("couleur").value,
+                sieges: document.getElementById("sieges").value,
+                extras: extras
+            }
+        };
+
+        console.log("DATA:", data);
+
+        await addDoc(collection(db, "cars"), data);
+
+        alert("Voiture ajoutée avec succès 🚗");
+
+        clearForm();
+        loadCars();
+
+    } catch (e) {
+        console.error("ERREUR:", e);
+    }
+};
+
+/* =========================
+   LOAD CARS
+========================= */
+window.loadCars = async function () {
+
+    let container = document.getElementById("carList");
+    container.innerHTML = "";
+
+    const snapshot = await getDocs(collection(db, "cars"));
+
+    console.log("Cars reçues:", snapshot.size);
+
+    snapshot.forEach((doc) => {
+
+        let car = doc.data();
+
+        let div = document.createElement("div");
+        div.className = "car";
+
+        div.innerHTML = `
+            <img src="${car.image}">
+            <p><b>${car.marque} ${car.modele}</b></p>
+            <p>💰 ${car.prix} FCFA</p>
+            <p>📍 ${car.ville || "N/A"} • ${car.annee || "?"}</p>
+            <p>
+              ⚙️ ${car.options?.transmission || "N/A"} • 
+              ⛽ ${car.options?.carburant || "N/A"}
+            </p>
+            <p>
+              🚗 ${car.options?.carrosserie || "N/A"} • 
+              🎨 ${car.options?.couleur || "N/A"} • 
+              🪑 ${car.options?.sieges || "N/A"}
+            </p>
+        `;
+
+        container.appendChild(div);
+    });
+};
+
+/* =========================
+   CLEAR FORM
+========================= */
+function clearForm() {
+    document.querySelectorAll("input").forEach(i => i.value = "");
+    document.querySelectorAll(".extra").forEach(e => e.checked = false);
+}
+
+/* =========================
+   INIT
+========================= */
+window.onload = function () {
+    loadCars();
+};
+
+</script>
 
 </body>
 </html>
