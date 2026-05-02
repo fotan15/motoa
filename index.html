@@ -290,6 +290,7 @@
 		
 		// LOAD CARS
 		window.loadCars = async function () {
+			alert("Voiture ajoutée avec succès 🚗");
 
 		    let container = document.getElementById("carList");
 		    container.innerHTML = "";
@@ -330,8 +331,6 @@
 		        container.appendChild(div);
 		    });
 		};
-
-		alert("Voiture ajoutée avec succès 🚗");
 		
 		// INIT
 		window.onload = function () {
