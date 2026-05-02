@@ -260,12 +260,10 @@
 		
 		        console.log("Ajout OK");
 		
+		        // ⚠️ IMPORTANT : on attend seulement la DB
 		        await loadCars();
-				alert("Voiture ajoutée avec succès 🚗");
 		
-		        // =========================
-		        // 🧼 RESET FORMULAIRE
-		        // =========================
+		        // ✅ RESET IMMÉDIAT (sans dépendre de loadCars)
 		        document.getElementById("marque").value = "";
 		        document.getElementById("modele").value = "";
 		        document.getElementById("prix").value = "";
@@ -282,10 +280,12 @@
 		
 		        document.querySelectorAll(".extra").forEach(e => e.checked = false);
 		
-		        console.log("Formulaire reset OK");
+		        alert("Voiture ajoutée avec succès 🚗");
+		
+		        console.log("Form reset OK");
 		
 		    } catch (e) {
-		        console.error("ERREUR:", e);
+		        console.error("ERREUR ADDCAR:", e);
 		    }
 		};
 		
