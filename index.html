@@ -202,20 +202,15 @@
 		} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
 		const firebaseConfig = {
-		  apiKey: "AIzaSyAaUWm-yN_dOEDZEvaAqXCYPcp5ABWF_yY",
+		  apiKey: "AIzaSyAaUWm...",
 		  authDomain: "motoa-c01f7.firebaseapp.com",
-		  projectId: "motoa-c01f7",
-		  storageBucket: "motoa-c01f7.firebasestorage.app",
-		  messagingSenderId: "303638072653",
-		  appId: "1:303638072653:web:48122c011e9c7e0633bb04"
+		  projectId: "motoa-c01f7"
 		};
 
 		const app = initializeApp(firebaseConfig);
 		const db = getFirestore(app);
 
-		// =====================
 		// ADD CAR
-		// =====================
 		window.addCar = async function () {
 
 			let marque = document.getElementById("marque").value;
@@ -223,9 +218,7 @@
 			let prix = document.getElementById("prix").value;
 			let image = document.getElementById("image").value;
 
-			if (!image) {
-				image = "https://picsum.photos/250/150";
-			}
+			if (!image) image = "https://picsum.photos/250/150";
 
 			await addDoc(collection(db, "cars"), {
 				marque,
@@ -234,13 +227,11 @@
 				image
 			});
 
-			loadCars();
+			window.loadCars();
 		};
 
-		// =====================
 		// LOAD CARS
-		// =====================
-		async function loadCars() {
+		window.loadCars = async function () {
 
 			let container = document.getElementById("carList");
 			container.innerHTML = "";
@@ -252,7 +243,6 @@
 				let car = doc.data();
 
 				let div = document.createElement("div");
-				div.className = "car";
 
 				div.innerHTML = `
 					<img src="${car.image}" width="100%">
@@ -262,13 +252,11 @@
 
 				container.appendChild(div);
 			});
-		}
+		};
 
-		// =====================
 		// INIT
-		// =====================
 		window.onload = function () {
-			loadCars();
+			window.loadCars();
 		};
 
 	</script>
