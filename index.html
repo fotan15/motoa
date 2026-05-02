@@ -152,30 +152,50 @@ window.addCar = async function () {
 
     try {
 
+        let marque = document.getElementById("marque").value || "";
+        let modele = document.getElementById("modele").value || "";
+        let prix = document.getElementById("prix").value || "";
+        let image = document.getElementById("image").value || "";
+        let annee = document.getElementById("annee").value || "";
+        let km = document.getElementById("km").value || "";
+        let ville = document.getElementById("ville").value || "";
+
+        let transmission = document.getElementById("transmission")?.value || "";
+        let carburant = document.getElementById("carburant")?.value || "";
+        let carrosserie = document.getElementById("carrosserie")?.value || "";
+        let couleur = document.getElementById("couleur")?.value || "";
+        let sieges = document.getElementById("sieges")?.value || "";
+
+        // extras
         let extras = [];
         document.querySelectorAll(".extra:checked").forEach(e => {
             extras.push(e.value);
         });
 
+        if (!image) {
+            image = "https://picsum.photos/250/150";
+        }
+
         let data = {
-            marque: document.getElementById("marque").value,
-            modele: document.getElementById("modele").value,
-            prix: document.getElementById("prix").value,
-            image: document.getElementById("image").value || "https://picsum.photos/250/150",
-            annee: document.getElementById("annee").value,
-            km: document.getElementById("km").value,
-            ville: document.getElementById("ville").value,
+            marque,
+            modele,
+            prix,
+            image,
+            annee,
+            km,
+            ville,
             options: {
-                transmission: document.getElementById("transmission").value,
-                carburant: document.getElementById("carburant").value,
-                carrosserie: document.getElementById("carrosserie").value,
-                couleur: document.getElementById("couleur").value,
-                sieges: document.getElementById("sieges").value,
-                extras: extras
+                transmission,
+                carburant,
+                carrosserie,
+                couleur,
+                sieges,
+                extras
             }
         };
 
         console.log("DATA:", data);
+
         console.log("Avant addDoc");
 
         const result = await addDoc(collection(db, "cars"), data);
@@ -184,11 +204,16 @@ window.addCar = async function () {
 
         alert("Voiture ajoutée avec succès 🚗");
 
-        clearForm();
-        loadCars();
+        await loadCars();
+
+        // RESET FORM
+        document.querySelectorAll("input").forEach(i => i.value = "");
+        document.querySelectorAll("select").forEach(s => s.selectedIndex = 0);
+        document.querySelectorAll(".extra").forEach(e => e.checked = false);
 
     } catch (e) {
-        console.error("❌ ERREUR FIREBASE:", e);
+        console.error("❌ ERREUR:", e);
+        alert("Erreur: " + e.message);
     }
 };
 
