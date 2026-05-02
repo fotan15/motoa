@@ -258,27 +258,42 @@
 		// LOAD CARS
 		window.loadCars = async function () {
 
-			let container = document.getElementById("carList");
-			container.innerHTML = "";
-
-			const snapshot = await getDocs(collection(db, "cars"));
-
-			snapshot.forEach((doc) => {
-
-				let car = doc.data();
-
-				let div = document.createElement("div");
-
-				div.innerHTML = `
-					<img src="${car.image}" width="100%">
-					<p><b>${car.marque} ${car.modele}</b></p>
-					<p>💰 ${car.prix} FCFA</p>
-				`;
-
-				container.appendChild(div);
-			});
+		    let container = document.getElementById("carList");
+		    container.innerHTML = "";
+		
+		    const snapshot = await getDocs(collection(db, "cars"));
+		
+		    snapshot.forEach((doc) => {
+		
+		        let car = doc.data();
+		
+		        let div = document.createElement("div");
+		        div.className = "car";
+		
+		        div.innerHTML = `
+		            <img src="${car.image}" width="100%">
+		
+		            <p><b>${car.marque} ${car.modele}</b></p>
+		            <p>💰 ${car.prix} FCFA</p>
+		
+		            <p>📍 ${car.ville || "N/A"} • ${car.annee || "?"}</p>
+		            <p>⚙️ ${car.options.transmission} • ⛽ ${car.options.carburant}</p>
+		
+		            <button onclick="toggleDetails('${doc.id}')">
+		                Voir détails
+		            </button>
+		
+		            <div id="details-${doc.id}" style="display:none">
+		                <p>🚗 ${car.options.carrosserie}</p>
+		                <p>🎨 ${car.options.couleur}</p>
+		                <p>🪑 ${car.options.sieges} sièges</p>
+		                <p>⭐ ${car.options.extras.join(", ")}</p>
+		            </div>
+		        `;
+		
+		        container.appendChild(div);
+		    });
 		};
-
 		// INIT
 		window.onload = function () {
 			window.loadCars();
