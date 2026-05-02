@@ -15,8 +15,6 @@
             color: white;
             text-align: center;
             padding: 15px;
-            position: sticky;
-            top: 0;
         }
 
         .container {
@@ -40,7 +38,6 @@
             color: white;
             border: none;
             border-radius: 8px;
-            font-size: 16px;
         }
 
         .car {
@@ -73,7 +70,6 @@
 <div class="container">
 
     <h2>🚗 Voitures</h2>
-
     <div id="carList"></div>
 
     <h2>📤 Ajouter une voiture</h2>
@@ -130,27 +126,26 @@
 
 </div>
 
-<!-- FIREBASE -->
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs } 
 from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
+/* 🔥 REMPLACE ICI PAR TON CONFIG FIREBASE */
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "motoaFree.firebaseapp.com",
-    projectId: "motoaFree"
+  apiKey: "TON_API_KEY",
+  authDomain: "motoaFree.firebaseapp.com",
+  projectId: "motoaFree",
+  storageBucket: "motoaFree.appspot.com",
+  messagingSenderId: "XXXX",
+  appId: "XXXX"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-let cars = [];
-
-/* =========================
-   ADD CAR
-========================= */
+/* ================= ADD CAR ================= */
 window.addCar = async function () {
 
     console.log("👉 addCar exécuté");
@@ -162,7 +157,7 @@ window.addCar = async function () {
             extras.push(e.value);
         });
 
-        const data = {
+        let data = {
             marque: document.getElementById("marque").value,
             modele: document.getElementById("modele").value,
             prix: document.getElementById("prix").value,
@@ -181,8 +176,11 @@ window.addCar = async function () {
         };
 
         console.log("DATA:", data);
+        console.log("Avant addDoc");
 
-        await addDoc(collection(db, "cars"), data);
+        const result = await addDoc(collection(db, "cars"), data);
+
+        console.log("✅ Ajout OK ID:", result.id);
 
         alert("Voiture ajoutée avec succès 🚗");
 
@@ -190,13 +188,11 @@ window.addCar = async function () {
         loadCars();
 
     } catch (e) {
-        console.error("ERREUR:", e);
+        console.error("❌ ERREUR FIREBASE:", e);
     }
 };
 
-/* =========================
-   LOAD CARS
-========================= */
+/* ================= LOAD ================= */
 window.loadCars = async function () {
 
     let container = document.getElementById("carList");
@@ -233,12 +229,9 @@ window.loadCars = async function () {
     });
 };
 
-/* =========================
-   CLEAR FORM
-========================= */
+/* ================= CLEAR FORM ================= */
 function clearForm() {
 
-    // inputs texte
     document.getElementById("marque").value = "";
     document.getElementById("modele").value = "";
     document.getElementById("prix").value = "";
@@ -247,20 +240,16 @@ function clearForm() {
     document.getElementById("km").value = "";
     document.getElementById("ville").value = "";
 
-    // select reset
     document.getElementById("transmission").selectedIndex = 0;
     document.getElementById("carburant").selectedIndex = 0;
     document.getElementById("carrosserie").selectedIndex = 0;
     document.getElementById("couleur").selectedIndex = 0;
     document.getElementById("sieges").selectedIndex = 0;
 
-    // checkbox reset
     document.querySelectorAll(".extra").forEach(e => e.checked = false);
 }
 
-/* =========================
-   INIT
-========================= */
+/* ================= INIT ================= */
 window.onload = function () {
     loadCars();
 };
