@@ -15,8 +15,6 @@
             color: white;
             text-align: center;
             padding: 15px;
-            position: sticky;
-            top: 0;
         }
 
         .container {
@@ -26,30 +24,24 @@
 
         input, select {
             width: 100%;
-            padding: 12px;
+            padding: 10px;
             margin: 5px 0;
-            border-radius: 8px;
-            border: 1px solid #ccc;
         }
 
         button {
             width: 100%;
-            padding: 12px;
+            padding: 10px;
             margin: 5px 0;
             background: #007BFF;
             color: white;
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
         }
 
         .car {
             background: white;
             margin: 10px 0;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             padding: 10px;
+            border-radius: 10px;
         }
 
         .btn-danger {
@@ -67,6 +59,7 @@
 
 <div class="container">
 
+    <!-- LOGIN -->
     <h2>🔐 Connexion</h2>
 
     <input id="email" placeholder="Email">
@@ -79,31 +72,28 @@
 
     <hr>
 
-    <h2>🚗 Ajouter une voiture</h2>
+    <!-- ADD CAR -->
+    <h2>🚗 Ajouter voiture</h2>
 
     <input id="marque" placeholder="Marque">
     <input id="modele" placeholder="Modèle">
     <input id="prix" placeholder="Prix">
     <input id="image" placeholder="Image URL">
 
-    <select id="transmission">
-        <option>Manuelle</option>
-        <option>Automatique</option>
-    </select>
-
-    <select id="carburant">
-        <option>Essence</option>
-        <option>Diesel</option>
-        <option>Électrique</option>
-    </select>
-
     <button onclick="addCar()">Ajouter</button>
 
     <hr>
 
+    <!-- MARKETPLACE -->
     <h2>🚘 Voitures disponibles</h2>
-
     <div id="carList"></div>
+
+    <hr>
+
+    <!-- GARAGE -->
+    <h2>🏪 Mon Garage</h2>
+    <button onclick="loadGarage()">Afficher mon garage</button>
+    <div id="garageList"></div>
 
 </div>
 
@@ -114,16 +104,19 @@ import {
     getFirestore, 
     collection, 
     addDoc, 
-    getDocs 
+    getDocs,
+    deleteDoc,
+    doc
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
-import { 
+import {
     getAuth,
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
     onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
+/* 🔥 FIREBASE CONFIG */
 const firebaseConfig = {
     apiKey: "AIzaSyBCtuE513iVtDMtAaXNtrpfPbXvWjUTXR4",
     authDomain: "motoafree.firebaseapp.com",
@@ -145,26 +138,16 @@ window.register = async function () {
     let email = document.getElementById("email").value;
     let password = document.getElementById("password").value;
 
-    try {
-        const user = await createUserWithEmailAndPassword(auth, email, password);
-        alert("Compte créé ✅");
-        currentUser = user.user;
-    } catch (e) {
-        alert(e.message);
-    }
+    await createUserWithEmailAndPassword(auth, email, password);
+    alert("Compte créé ✅");
 };
 
 window.login = async function () {
     let email = document.getElementById("email").value;
     let password = document.getElementById("password").value;
 
-    try {
-        const user = await signInWithEmailAndPassword(auth, email, password);
-        alert("Connecté ✅");
-        currentUser = user.user;
-    } catch (e) {
-        alert(e.message);
-    }
+    await signInWithEmailAndPassword(auth, email, password);
+    alert("Connecté ✅");
 };
 
 onAuthStateChanged(auth, (user) => {
@@ -182,7 +165,7 @@ onAuthStateChanged(auth, (user) => {
 window.addCar = async function () {
 
     if (!currentUser) {
-        alert("Tu dois être connecté ❌");
+        alert("Connecte-toi ❌");
         return;
     }
 
@@ -211,7 +194,7 @@ window.addCar = async function () {
     loadCars();
 };
 
-/* ================= LOAD CARS ================= */
+/* ================= LOAD MARKET ================= */
 
 window.loadCars = async function () {
 
@@ -220,12 +203,9 @@ window.loadCars = async function () {
 
     const snapshot = await getDocs(collection(db, "cars"));
 
-    let count = 0;
+    snapshot.forEach((docItem) => {
 
-    snapshot.forEach((doc) => {
-
-        let car = doc.data();
-        count++;
+        let car = docItem.data();
 
         let div = document.createElement("div");
         div.className = "car";
@@ -233,15 +213,59 @@ window.loadCars = async function () {
         div.innerHTML = `
             <img src="${car.image}" width="100%">
             <h3>${car.marque} ${car.modele}</h3>
-            <p>💰 ${car.prix} FCFA</p>
+            <p>${car.prix} FCFA</p>
         `;
 
         container.appendChild(div);
     });
-
-    console.log("Cars reçues:", count);
 };
 
+/* ================= GARAGE ================= */
+
+window.loadGarage = async function () {
+
+    if (!currentUser) {
+        alert("Connecte-toi ❌");
+        return;
+    }
+
+    let container = document.getElementById("garageList");
+    container.innerHTML = "";
+
+    const snapshot = await getDocs(collection(db, "cars"));
+
+    snapshot.forEach((docItem) => {
+
+        let car = docItem.data();
+
+        if (car.userId !== currentUser.uid) return;
+
+        let div = document.createElement("div");
+        div.className = "car";
+
+        div.innerHTML = `
+            <img src="${car.image}" width="100%">
+            <h3>${car.marque} ${car.modele}</h3>
+            <p>${car.prix} FCFA</p>
+
+            <button class="btn-danger" onclick="deleteCar('${docItem.id}')">
+                Supprimer
+            </button>
+        `;
+
+        container.appendChild(div);
+    });
+};
+
+/* ================= DELETE ================= */
+
+window.deleteCar = async function (id) {
+    await deleteDoc(doc(db, "cars", id));
+    alert("Supprimé ❌");
+    loadGarage();
+};
+
+/* INIT */
 window.onload = loadCars;
 
 </script>
