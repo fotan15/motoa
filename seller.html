@@ -1,0 +1,60 @@
+<h2>Mon Garage</h2>
+
+<input id="marque" placeholder="Marque">
+<input id="modele" placeholder="Modèle">
+<input id="prix" placeholder="Prix">
+
+<button onclick="addCar()">Ajouter voiture</button>
+
+<div id="garage"></div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+import { getFirestore, collection, addDoc, query, where, getDocs } 
+from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "XXX",
+  projectId: "motoafree"
+});
+
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let user = null;
+
+auth.onAuthStateChanged(async (u) => {
+  user = u;
+  loadGarage();
+});
+
+window.addCar = async function () {
+
+  await addDoc(collection(db, "cars"), {
+    marque: document.getElementById("marque").value,
+    modele: document.getElementById("modele").value,
+    prix: document.getElementById("prix").value,
+    ownerId: user.uid
+  });
+
+  loadGarage();
+};
+
+async function loadGarage() {
+
+  const q = query(collection(db, "cars"), where("ownerId", "==", user.uid));
+  const snap = await getDocs(q);
+
+  let html = "";
+
+  snap.forEach(doc => {
+    let c = doc.data();
+    html += `<p>${c.marque} ${c.modele} - ${c.prix}</p>`;
+  });
+
+  document.getElementById("garage").innerHTML = html;
+}
+
+</script>
