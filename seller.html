@@ -1,60 +1,153 @@
-<h2>Mon Garage</h2>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Garage vendeur - Motoa</title>
+</head>
 
-<input id="marque" placeholder="Marque">
-<input id="modele" placeholder="Modèle">
-<input id="prix" placeholder="Prix">
+<body>
+										 
+									
 
-<button onclick="addCar()">Ajouter voiture</button>
+<h2>🚗 Mon garage</h2>
 
-<div id="garage"></div>
+<button onclick="logout()">Se déconnecter</button>
+
+<h3>Ajouter une voiture</h3>
+
+<input id="marque" placeholder="Marque"><br><br>
+<input id="modele" placeholder="Modèle"><br><br>
+<input id="prix" placeholder="Prix"><br><br>
+
+<button onclick="addCar()">Ajouter</button>
+
+<h3>Mes voitures</h3>
+
+<div id="carList"></div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, where, getDocs } 
-from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+																					  
+																   
+																		
 
-const app = initializeApp({
-  apiKey: "XXX",
-  projectId: "motoafree"
-});
+import { 
+    getAuth, 
+    onAuthStateChanged,
+    signOut
+} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
+import { 
+    getFirestore, 
+    collection, 
+    addDoc, 
+    getDocs,
+    query,
+    where,
+    deleteDoc,
+    doc
+} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+
+// CONFIG
+const firebaseConfig = {
+    apiKey: "AIzaSyBCtuE513iVtDMtAaXNtrpfPbXvWjUTXR4",
+    authDomain: "motoafree.firebaseapp.com",
+    projectId: "motoafree",
+    storageBucket: "motoafree.firebasestorage.app",
+    messagingSenderId: "727661050460",
+    appId: "1:727661050460:web:72a552bb47b3fe48704499"
+};
+
+const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-let user = null;
+// ======================
+// CHECK USER
+// ======================
+let currentUser = null;
 
-auth.onAuthStateChanged(async (u) => {
-  user = u;
-  loadGarage();
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        currentUser = user;
+        loadCars();
+    } else {
+        window.location.href = "login.html";
+    }
 });
 
+// ======================
+// ADD CAR
+// ======================
 window.addCar = async function () {
 
-  await addDoc(collection(db, "cars"), {
-    marque: document.getElementById("marque").value,
-    modele: document.getElementById("modele").value,
-    prix: document.getElementById("prix").value,
-    ownerId: user.uid
-  });
+										
+    let marque = document.getElementById("marque").value;
+    let modele = document.getElementById("modele").value;
+    let prix = document.getElementById("prix").value;
+					 
+	 
 
-  loadGarage();
+    await addDoc(collection(db, "cars"), {
+        marque,
+        modele,
+        prix,
+        userId: currentUser.uid
+    });
+
+    loadCars();
 };
 
-async function loadGarage() {
+// ======================
+// LOAD SELLER CARS
+// ======================
+async function loadCars() {
 
-  const q = query(collection(db, "cars"), where("ownerId", "==", user.uid));
-  const snap = await getDocs(q);
+    let container = document.getElementById("carList");
+    container.innerHTML = "";
 
-  let html = "";
+    const q = query(
+        collection(db, "cars"),
+        where("userId", "==", currentUser.uid)
+    );
 
-  snap.forEach(doc => {
-    let c = doc.data();
-    html += `<p>${c.marque} ${c.modele} - ${c.prix}</p>`;
-  });
+    const snapshot = await getDocs(q);
+					   
+														 
+	 
 
-  document.getElementById("garage").innerHTML = html;
+    snapshot.forEach((docItem) => {
+
+        let car = docItem.data();
+
+        let div = document.createElement("div");
+
+        div.innerHTML = `
+            <p>${car.marque} ${car.modele} - ${car.prix} FCFA</p>
+            <button onclick="deleteCar('${docItem.id}')">Supprimer</button>
+        `;
+
+        container.appendChild(div);
+    });
 }
 
+// ======================
+// DELETE
+// ======================
+window.deleteCar = async function(id) {
+
+    await deleteDoc(doc(db, "cars", id));
+    loadCars();
+};
+
+// ======================
+// LOGOUT
+// ======================
+window.logout = function () {
+    signOut(auth);
+};
+
 </script>
+
+</body>
+</html>
