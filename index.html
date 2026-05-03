@@ -1,220 +1,248 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Motoa</title>
+    <title>Motoa - Marketplace Auto</title>
 
-  <style>
-    body { font-family: Arial; background:#f0f2f5; margin:0; }
-    header { background:#007BFF; color:white; text-align:center; padding:15px; }
-    .container { width:95%; margin:auto; }
+    <style>
+        body {
+            font-family: Arial;
+            background: #f0f2f5;
+            margin: 0;
+        }
 
-    input, select {
-      width:100%;
-      padding:10px;
-      margin:5px 0;
-      border-radius:8px;
-      border:1px solid #ccc;
-    }
+        header {
+            background: #007BFF;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            position: sticky;
+            top: 0;
+        }
 
-    button {
-      width:100%;
-      padding:10px;
-      margin:5px 0;
-      background:#007BFF;
-      color:white;
-      border:none;
-      border-radius:8px;
-    }
+        .container {
+            width: 95%;
+            margin: auto;
+        }
 
-    .car {
-      background:white;
-      margin:10px 0;
-      padding:10px;
-      border-radius:10px;
-    }
-  </style>
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin: 5px 0;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin: 5px 0;
+            background: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .car {
+            background: white;
+            margin: 10px 0;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 10px;
+        }
+
+        .btn-danger {
+            background: red;
+        }
+    </style>
 </head>
 
 <body>
 
 <header>
-  <h1>Motoa</h1>
+    <h1>Motoa</h1>
+    <p>Marketplace Auto</p>
 </header>
 
 <div class="container">
 
-  <!-- AUTH -->
-  <h2>🔐 Connexion / Inscription</h2>
+    <h2>🔐 Connexion</h2>
 
-  <input id="email" placeholder="Email">
-  <input id="password" placeholder="Mot de passe" type="password">
+    <input id="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Mot de passe">
 
-  <select id="role">
-    <option value="acheteur">Acheteur</option>
-    <option value="vendeur">Vendeur</option>
-  </select>
+    <button onclick="register()">Créer compte</button>
+    <button onclick="login()">Connexion</button>
 
-  <button onclick="register()">S'inscrire</button>
-  <button onclick="login()">Se connecter</button>
-  <button onclick="logout()">Se déconnecter</button>
+    <p id="userStatus">Non connecté</p>
 
-  <h3 id="userInfo"></h3>
+    <hr>
 
-  <!-- ADD CAR -->
-  <div id="addCarSection" style="display:none">
-
-    <h2>Ajouter une voiture</h2>
+    <h2>🚗 Ajouter une voiture</h2>
 
     <input id="marque" placeholder="Marque">
     <input id="modele" placeholder="Modèle">
     <input id="prix" placeholder="Prix">
     <input id="image" placeholder="Image URL">
 
+    <select id="transmission">
+        <option>Manuelle</option>
+        <option>Automatique</option>
+    </select>
+
+    <select id="carburant">
+        <option>Essence</option>
+        <option>Diesel</option>
+        <option>Électrique</option>
+    </select>
+
     <button onclick="addCar()">Ajouter</button>
 
-  </div>
+    <hr>
 
-  <!-- CARS -->
-  <h2>Voitures</h2>
-  <div id="carList"></div>
+    <h2>🚘 Voitures disponibles</h2>
+
+    <div id="carList"></div>
 
 </div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged }
-from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+import { 
+    getFirestore, 
+    collection, 
+    addDoc, 
+    getDocs 
+} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
-import { getFirestore, collection, addDoc, getDocs, setDoc, doc, getDoc }
-from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { 
+    getAuth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
-// CONFIG
 const firebaseConfig = {
-  apiKey: "AIzaSyBCtuE513iVtDMtAaXNtrpfPbXvWjUTXR4",
-  authDomain: "motoafree.firebaseapp.com",
-  projectId: "motoafree",
+    apiKey: "AIzaSyBCtuE513iVtDMtAaXNtrpfPbXvWjUTXR4",
+    authDomain: "motoafree.firebaseapp.com",
+    projectId: "motoafree",
+    storageBucket: "motoafree.firebasestorage.app",
+    messagingSenderId: "727661050460",
+    appId: "1:727661050460:web:72a552bb47b3fe48704499"
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 const db = getFirestore(app);
+const auth = getAuth(app);
 
 let currentUser = null;
-let currentRole = null;
 
-// ================= REGISTER
-window.register = async function() {
+/* ================= AUTH ================= */
 
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-  const role = document.getElementById("role").value;
+window.register = async function () {
+    let email = document.getElementById("email").value;
+    let password = document.getElementById("password").value;
 
-  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-
-  await setDoc(doc(db, "users", userCredential.user.uid), {
-    email,
-    role
-  });
-
-  alert("Compte créé !");
-};
-
-// ================= LOGIN
-window.login = async function() {
-
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  await signInWithEmailAndPassword(auth, email, password);
-
-  alert("Connecté !");
-};
-
-// ================= LOGOUT
-window.logout = async function() {
-  await signOut(auth);
-  alert("Déconnecté !");
-};
-
-// ================= AUTH STATE
-onAuthStateChanged(auth, async (user) => {
-
-  if (user) {
-
-    currentUser = user;
-
-    const docSnap = await getDoc(doc(db, "users", user.uid));
-
-    if (docSnap.exists()) {
-      currentRole = docSnap.data().role;
+    try {
+        const user = await createUserWithEmailAndPassword(auth, email, password);
+        alert("Compte créé ✅");
+        currentUser = user.user;
+    } catch (e) {
+        alert(e.message);
     }
+};
 
-    document.getElementById("userInfo").innerText =
-      "Connecté : " + user.email + " (" + currentRole + ")";
+window.login = async function () {
+    let email = document.getElementById("email").value;
+    let password = document.getElementById("password").value;
 
-    // afficher ajout si vendeur
-    if (currentRole === "vendeur") {
-      document.getElementById("addCarSection").style.display = "block";
+    try {
+        const user = await signInWithEmailAndPassword(auth, email, password);
+        alert("Connecté ✅");
+        currentUser = user.user;
+    } catch (e) {
+        alert(e.message);
+    }
+};
+
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        currentUser = user;
+        document.getElementById("userStatus").innerText = "Connecté : " + user.email;
     } else {
-      document.getElementById("addCarSection").style.display = "none";
+        currentUser = null;
+        document.getElementById("userStatus").innerText = "Non connecté";
     }
-
-  } else {
-    currentUser = null;
-    currentRole = null;
-    document.getElementById("userInfo").innerText = "Non connecté";
-    document.getElementById("addCarSection").style.display = "none";
-  }
-
-  loadCars();
 });
 
-// ================= ADD CAR
-window.addCar = async function() {
+/* ================= ADD CAR ================= */
 
-  if (!currentUser) {
-    alert("Connecte-toi !");
-    return;
-  }
+window.addCar = async function () {
 
-  await addDoc(collection(db, "cars"), {
-    marque: marque.value,
-    modele: modele.value,
-    prix: prix.value,
-    image: image.value || "https://picsum.photos/250/150",
-    userId: currentUser.uid
-  });
+    if (!currentUser) {
+        alert("Tu dois être connecté ❌");
+        return;
+    }
 
-  alert("Voiture ajoutée");
+    let marque = document.getElementById("marque").value;
+    let modele = document.getElementById("modele").value;
+    let prix = document.getElementById("prix").value;
+    let image = document.getElementById("image").value;
 
-  loadCars();
+    if (!image) image = "https://picsum.photos/250/150";
+
+    await addDoc(collection(db, "cars"), {
+        marque,
+        modele,
+        prix,
+        image,
+        userId: currentUser.uid
+    });
+
+    alert("Voiture ajoutée 🚗");
+
+    document.getElementById("marque").value = "";
+    document.getElementById("modele").value = "";
+    document.getElementById("prix").value = "";
+    document.getElementById("image").value = "";
+
+    loadCars();
 };
 
-// ================= LOAD CARS
-window.loadCars = async function() {
+/* ================= LOAD CARS ================= */
 
-  let container = document.getElementById("carList");
-  container.innerHTML = "";
+window.loadCars = async function () {
 
-  const snapshot = await getDocs(collection(db, "cars"));
+    let container = document.getElementById("carList");
+    container.innerHTML = "";
 
-  snapshot.forEach(doc => {
+    const snapshot = await getDocs(collection(db, "cars"));
 
-    let car = doc.data();
+    let count = 0;
 
-    let div = document.createElement("div");
-    div.className = "car";
+    snapshot.forEach((doc) => {
 
-    div.innerHTML = `
-      <img src="${car.image}" width="100%">
-      <h3>${car.marque} ${car.modele}</h3>
-      <p>${car.prix} FCFA</p>
-    `;
+        let car = doc.data();
+        count++;
 
-    container.appendChild(div);
-  });
+        let div = document.createElement("div");
+        div.className = "car";
+
+        div.innerHTML = `
+            <img src="${car.image}" width="100%">
+            <h3>${car.marque} ${car.modele}</h3>
+            <p>💰 ${car.prix} FCFA</p>
+        `;
+
+        container.appendChild(div);
+    });
+
+    console.log("Cars reçues:", count);
 };
+
+window.onload = loadCars;
 
 </script>
 
