@@ -1,52 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Motoa - Marketplace Auto</title>
+    <title>Motoa</title>
 
     <style>
-        body {
-            font-family: Arial;
-            background: #f0f2f5;
-            margin: 0;
-        }
+        body { font-family: Arial; background:#f5f5f5; margin:0; }
 
         header {
-            background: #007BFF;
-            color: white;
-            text-align: center;
-            padding: 15px;
+            background:#007BFF;
+            color:white;
+            text-align:center;
+            padding:15px;
         }
 
-        .container {
-            width: 95%;
-            margin: auto;
+        .container { width:95%; margin:auto; }
+
+        input, select, button {
+            width:100%;
+            padding:10px;
+            margin:5px 0;
+            border-radius:8px;
         }
 
-        input, select {
-            width: 100%;
-            padding: 10px;
-            margin: 5px 0;
-        }
-
-        button {
-            width: 100%;
-            padding: 10px;
-            margin: 5px 0;
-            background: #007BFF;
-            color: white;
-            border: none;
-        }
+        button { background:#007BFF; color:white; border:none; }
 
         .car {
-            background: white;
-            margin: 10px 0;
-            padding: 10px;
-            border-radius: 10px;
+            background:white;
+            margin:10px 0;
+            padding:10px;
+            border-radius:10px;
         }
 
-        .btn-danger {
-            background: red;
-        }
+        .hidden { display:none; }
     </style>
 </head>
 
@@ -54,69 +39,68 @@
 
 <header>
     <h1>Motoa</h1>
-    <p>Marketplace Auto</p>
 </header>
 
 <div class="container">
 
-    <!-- LOGIN -->
-    <h2>🔐 Connexion</h2>
+    <!-- 🔐 AUTH -->
+    <div id="authBox">
+        <h3>Connexion / Inscription</h3>
+        <input id="email" placeholder="Email">
+        <input id="password" type="password" placeholder="Mot de passe">
+        <button onclick="register()">S'inscrire</button>
+        <button onclick="login()">Se connecter</button>
+        <button onclick="logout()">Se déconnecter</button>
+    </div>
 
-    <input id="email" placeholder="Email">
-    <input id="password" type="password" placeholder="Mot de passe">
+    <!-- 🚗 PUBLIC -->
+    <h2>Voitures disponibles</h2>
+    <input id="search" placeholder="Rechercher">
+    <button onclick="loadCars()">Rechercher</button>
 
-    <button onclick="register()">Créer compte</button>
-    <button onclick="login()">Connexion</button>
-
-    <p id="userStatus">Non connecté</p>
-
-    <hr>
-
-    <!-- ADD CAR -->
-    <h2>🚗 Ajouter voiture</h2>
-
-    <input id="marque" placeholder="Marque">
-    <input id="modele" placeholder="Modèle">
-    <input id="prix" placeholder="Prix">
-    <input id="image" placeholder="Image URL">
-
-    <button onclick="addCar()">Ajouter</button>
-
-    <hr>
-
-    <!-- MARKETPLACE -->
-    <h2>🚘 Voitures disponibles</h2>
     <div id="carList"></div>
 
-    <hr>
+    <!-- 🔒 AJOUT (VISIBLE SEULEMENT CONNECTÉ) -->
+    <div id="addBox" class="hidden">
+        <h2>Ajouter une voiture</h2>
 
-    <!-- GARAGE -->
-    <h2>🏪 Mon Garage</h2>
-    <button onclick="loadGarage()">Afficher mon garage</button>
-    <div id="garageList"></div>
+        <input id="marque" placeholder="Marque">
+        <input id="modele" placeholder="Modèle">
+        <input id="prix" placeholder="Prix">
+        <input id="image" placeholder="Image URL">
+
+        <button onclick="addCar()">Ajouter</button>
+    </div>
+
+    <!-- 🏪 GARAGE -->
+    <div id="garageBox" class="hidden">
+        <h2>Mon garage</h2>
+        <div id="myCars"></div>
+    </div>
 
 </div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-import { 
-    getFirestore, 
-    collection, 
-    addDoc, 
+
+import {
+    getFirestore,
+    collection,
+    addDoc,
     getDocs,
-    deleteDoc,
-    doc
+    query,
+    where
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
 import {
     getAuth,
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
+    signOut,
     onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
-/* 🔥 FIREBASE CONFIG */
 const firebaseConfig = {
     apiKey: "AIzaSyBCtuE513iVtDMtAaXNtrpfPbXvWjUTXR4",
     authDomain: "motoafree.firebaseapp.com",
@@ -132,40 +116,44 @@ const auth = getAuth(app);
 
 let currentUser = null;
 
-/* ================= AUTH ================= */
-
 window.register = async function () {
-    let email = document.getElementById("email").value;
-    let password = document.getElementById("password").value;
+    const email = document.getElementById("email").value;
+    const pass = document.getElementById("password").value;
 
-    await createUserWithEmailAndPassword(auth, email, password);
-    alert("Compte créé ✅");
+    await createUserWithEmailAndPassword(auth, email, pass);
+    alert("Compte créé !");
 };
 
 window.login = async function () {
-    let email = document.getElementById("email").value;
-    let password = document.getElementById("password").value;
+    const email = document.getElementById("email").value;
+    const pass = document.getElementById("password").value;
 
-    await signInWithEmailAndPassword(auth, email, password);
-    alert("Connecté ✅");
+    await signInWithEmailAndPassword(auth, email, pass);
+};
+
+window.logout = async function () {
+    await signOut(auth);
 };
 
 onAuthStateChanged(auth, (user) => {
-    if (user) {
-        currentUser = user;
-        document.getElementById("userStatus").innerText = "Connecté : " + user.email;
-    } else {
-        currentUser = null;
-        document.getElementById("userStatus").innerText = "Non connecté";
-    }
-});
 
-/* ================= ADD CAR ================= */
+    currentUser = user;
+
+    if (user) {
+        document.getElementById("addBox").classList.remove("hidden");
+        document.getElementById("garageBox").classList.remove("hidden");
+        loadMyCars();
+    } else {
+        document.getElementById("addBox").classList.add("hidden");
+        document.getElementById("garageBox").classList.add("hidden");
+    }
+
+});
 
 window.addCar = async function () {
 
     if (!currentUser) {
-        alert("Connecte-toi ❌");
+        alert("Connecte-toi !");
         return;
     }
 
@@ -174,7 +162,7 @@ window.addCar = async function () {
     let prix = document.getElementById("prix").value;
     let image = document.getElementById("image").value;
 
-    if (!image) image = "https://picsum.photos/250/150";
+    if (!image) image = "https://picsum.photos/200";
 
     await addDoc(collection(db, "cars"), {
         marque,
@@ -192,81 +180,57 @@ window.addCar = async function () {
     document.getElementById("image").value = "";
 
     loadCars();
+    loadMyCars();
 };
-
-/* ================= LOAD MARKET ================= */
 
 window.loadCars = async function () {
 
-    let container = document.getElementById("carList");
+    const container = document.getElementById("carList");
     container.innerHTML = "";
 
     const snapshot = await getDocs(collection(db, "cars"));
 
-    snapshot.forEach((docItem) => {
+    snapshot.forEach(doc => {
+        const car = doc.data();
 
-        let car = docItem.data();
-
-        let div = document.createElement("div");
-        div.className = "car";
-
-        div.innerHTML = `
-            <img src="${car.image}" width="100%">
-            <h3>${car.marque} ${car.modele}</h3>
-            <p>${car.prix} FCFA</p>
+        container.innerHTML += `
+            <div class="car">
+                <img src="${car.image}" width="100%">
+                <p>${car.marque} ${car.modele}</p>
+                <p>${car.prix} €</p>
+            </div>
         `;
-
-        container.appendChild(div);
     });
 };
 
-/* ================= GARAGE ================= */
+window.loadMyCars = async function () {
 
-window.loadGarage = async function () {
+    if (!currentUser) return;
 
-    if (!currentUser) {
-        alert("Connecte-toi ❌");
-        return;
-    }
-
-    let container = document.getElementById("garageList");
+    const container = document.getElementById("myCars");
     container.innerHTML = "";
 
-    const snapshot = await getDocs(collection(db, "cars"));
+    const q = query(
+        collection(db, "cars"),
+        where("userId", "==", currentUser.uid)
+    );
 
-    snapshot.forEach((docItem) => {
+    const snapshot = await getDocs(q);
 
-        let car = docItem.data();
+    snapshot.forEach(doc => {
+        const car = doc.data();
 
-        if (car.userId !== currentUser.uid) return;
-
-        let div = document.createElement("div");
-        div.className = "car";
-
-        div.innerHTML = `
-            <img src="${car.image}" width="100%">
-            <h3>${car.marque} ${car.modele}</h3>
-            <p>${car.prix} FCFA</p>
-
-            <button class="btn-danger" onclick="deleteCar('${docItem.id}')">
-                Supprimer
-            </button>
+        container.innerHTML += `
+            <div class="car">
+                <p>${car.marque} ${car.modele}</p>
+            </div>
         `;
-
-        container.appendChild(div);
     });
 };
 
-/* ================= DELETE ================= */
-
-window.deleteCar = async function (id) {
-    await deleteDoc(doc(db, "cars", id));
-    alert("Supprimé ❌");
-    loadGarage();
+window.onload = function () {
+    loadCars();
 };
-
-/* INIT */
-window.onload = loadCars;
 
 </script>
 
