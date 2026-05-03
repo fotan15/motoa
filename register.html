@@ -1,53 +1,91 @@
 <!DOCTYPE html>
 <html>
+<head>
+    <title>Inscription - Motoa</title>
+</head>
+
 <body>
 
-<h2>Inscription</h2>
+<h2>Créer un compte</h2>
 
-<input id="email" placeholder="Email">
-<input id="password" type="password" placeholder="Mot de passe">
+<input id="email" placeholder="Email"><br><br>
+<input id="password" type="password" placeholder="Mot de passe"><br><br>
 
 <select id="role">
-  <option value="buyer">Acheteur</option>
-  <option value="seller">Vendeur</option>
-</select>
+    <option value="buyer">Acheteur</option>
+    <option value="seller">Vendeur</option>
+</select><br><br>
 
 <button onclick="register()">S'inscrire</button>
+
+<p id="msg"></p>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword } 
-from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
-import { getFirestore, doc, setDoc } 
-from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { 
+    getAuth, 
+    createUserWithEmailAndPassword 
+} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
+import { 
+    getFirestore, 
+    doc, 
+    setDoc 
+} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+
+// 🔥 CONFIG FIREBASE (TON PROJET motoaFree)
 const firebaseConfig = {
-  apiKey: "XXX",
-  authDomain: "motoafree.firebaseapp.com",
-  projectId: "motoafree"
+    apiKey: "AIzaSyBCtuE513iVtDMtAaXNtrpfPbXvWjUTXR4",
+    authDomain: "motoafree.firebaseapp.com",
+    projectId: "motoafree",
+    storageBucket: "motoafree.firebasestorage.app",
+    messagingSenderId: "727661050460",
+    appId: "1:727661050460:web:72a552bb47b3fe48704499"
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// ======================
+// REGISTER
+// ======================
 window.register = async function () {
 
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-  const role = document.getElementById("role").value;
+    let email = document.getElementById("email").value;
+    let password = document.getElementById("password").value;
+    let role = document.getElementById("role").value;
 
-  const userCred = await createUserWithEmailAndPassword(auth, email, password);
+    try {
 
-  await setDoc(doc(db, "users", userCred.user.uid), {
-    email,
-    role
-  });
+        // 🔐 création du compte auth
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
 
-  alert("Compte créé !");
-  window.location.href = "login.html";
+        const user = userCredential.user;
+
+        console.log("Utilisateur créé:", user.uid);
+
+        // 💾 sauvegarde dans Firestore
+        await setDoc(doc(db, "users", user.uid), {
+            email: email,
+            role: role
+        });
+
+        document.getElementById("msg").innerText = "✅ Compte créé avec succès";
+
+        // 🔁 redirection
+        setTimeout(() => {
+            window.location.href = "login.html";
+        }, 1500);
+
+    } catch (error) {
+
+        console.error(error);
+
+        document.getElementById("msg").innerText = "❌ " + error.message;
+    }
 };
 
 </script>
