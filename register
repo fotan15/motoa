@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2>Inscription</h2>
+
+<input id="email" placeholder="Email">
+<input id="password" type="password" placeholder="Mot de passe">
+
+<select id="role">
+  <option value="buyer">Acheteur</option>
+  <option value="seller">Vendeur</option>
+</select>
+
+<button onclick="register()">S'inscrire</button>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword } 
+from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+
+import { getFirestore, doc, setDoc } 
+from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "XXX",
+  authDomain: "motoafree.firebaseapp.com",
+  projectId: "motoafree"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+window.register = async function () {
+
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  const role = document.getElementById("role").value;
+
+  const userCred = await createUserWithEmailAndPassword(auth, email, password);
+
+  await setDoc(doc(db, "users", userCred.user.uid), {
+    email,
+    role
+  });
+
+  alert("Compte créé !");
+  window.location.href = "login.html";
+};
+
+</script>
+
+</body>
+</html>
