@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Motoa - Marketplace Auto</title>
+  <title>Motoa</title>
 
   <style>
     body { font-family: Arial; background:#f0f2f5; margin:0; }
@@ -29,15 +29,8 @@
     .car {
       background:white;
       margin:10px 0;
-      border-radius:10px;
       padding:10px;
-      box-shadow:0 2px 5px rgba(0,0,0,0.1);
-    }
-
-    .car img {
-      width:100%;
-      height:180px;
-      object-fit:cover;
+      border-radius:10px;
     }
   </style>
 </head>
@@ -46,103 +39,43 @@
 
 <header>
   <h1>Motoa</h1>
-  <p>Achat & Vente de voitures</p>
 </header>
 
 <div class="container">
 
-  <h2>🔍 Filtre PRO</h2>
+  <!-- AUTH -->
+  <h2>🔐 Connexion / Inscription</h2>
 
-  <input id="search" placeholder="Marque ou modèle">
-  <input id="maxPrice" placeholder="Prix max">
+  <input id="email" placeholder="Email">
+  <input id="password" placeholder="Mot de passe" type="password">
 
-  <select id="filterTransmission">
-    <option value="">Transmission (Tous)</option>
-    <option>Manuelle</option>
-    <option>Automatique</option>
-    <option>Semi-automatique</option>
+  <select id="role">
+    <option value="acheteur">Acheteur</option>
+    <option value="vendeur">Vendeur</option>
   </select>
 
-  <select id="filterCarburant">
-    <option value="">Carburant (Tous)</option>
-    <option>Essence</option>
-    <option>Diesel</option>
-    <option>Électrique</option>
-  </select>
+  <button onclick="register()">S'inscrire</button>
+  <button onclick="login()">Se connecter</button>
+  <button onclick="logout()">Se déconnecter</button>
 
-  <select id="filterCarrosserie">
-    <option value="">Carrosserie (Toutes)</option>
-    <option>Berline</option>
-    <option>SUV</option>
-    <option>Citadine</option>
-    <option>Coupé</option>
-    <option>Pickup</option>
-  </select>
+  <h3 id="userInfo"></h3>
 
-  <select id="filterCouleur">
-    <option value="">Couleur (Toutes)</option>
-    <option>Noir</option>
-    <option>Blanc</option>
-    <option>Gris</option>
-    <option>Bleu</option>
-    <option>Rouge</option>
-  </select>
+  <!-- ADD CAR -->
+  <div id="addCarSection" style="display:none">
 
-  <button onclick="filterCars()">Filtrer</button>
-  <button onclick="loadCars()">Reset</button>
+    <h2>Ajouter une voiture</h2>
 
-  <h2>📤 Ajouter une voiture</h2>
+    <input id="marque" placeholder="Marque">
+    <input id="modele" placeholder="Modèle">
+    <input id="prix" placeholder="Prix">
+    <input id="image" placeholder="Image URL">
 
-  <input id="marque" placeholder="Marque">
-  <input id="modele" placeholder="Modèle">
-  <input id="prix" placeholder="Prix">
-  <input id="image" placeholder="Image URL">
-  <input id="annee" placeholder="Année">
-  <input id="km" placeholder="Kilométrage">
-  <input id="ville" placeholder="Ville">
+    <button onclick="addCar()">Ajouter</button>
 
-  <select id="transmission">
-    <option>Manuelle</option>
-    <option>Automatique</option>
-    <option>Semi-automatique</option>
-  </select>
+  </div>
 
-  <select id="carburant">
-    <option>Essence</option>
-    <option>Diesel</option>
-    <option>Électrique</option>
-  </select>
-
-  <select id="carrosserie">
-    <option>Berline</option>
-    <option>SUV</option>
-    <option>Citadine</option>
-    <option>Coupé</option>
-    <option>Pickup</option>
-  </select>
-
-  <select id="couleur">
-    <option>Noir</option>
-    <option>Blanc</option>
-    <option>Gris</option>
-    <option>Bleu</option>
-    <option>Rouge</option>
-  </select>
-
-  <select id="sieges">
-    <option>2</option>
-    <option>4</option>
-    <option>5</option>
-    <option>7</option>
-  </select>
-
-  <label><input type="checkbox" value="ABS" class="extra"> ABS</label>
-  <label><input type="checkbox" value="Bluetooth" class="extra"> Bluetooth</label>
-  <label><input type="checkbox" value="GPS" class="extra"> GPS</label>
-
-  <button onclick="addCar()">Ajouter</button>
-
-  <h2>🚗 Voitures</h2>
+  <!-- CARS -->
+  <h2>Voitures</h2>
   <div id="carList"></div>
 
 </div>
@@ -150,141 +83,138 @@
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs }
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+
+import { getFirestore, collection, addDoc, getDocs, setDoc, doc, getDoc }
 from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
+// CONFIG
 const firebaseConfig = {
   apiKey: "AIzaSyBCtuE513iVtDMtAaXNtrpfPbXvWjUTXR4",
   authDomain: "motoafree.firebaseapp.com",
   projectId: "motoafree",
-  storageBucket: "motoafree.firebasestorage.app",
-  messagingSenderId: "727661050460",
-  appId: "1:727661050460:web:72a552bb47b3fe48704499"
 };
 
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 const db = getFirestore(app);
 
-let allCars = [];
+let currentUser = null;
+let currentRole = null;
 
-// ADD
-window.addCar = async function () {
+// ================= REGISTER
+window.register = async function() {
 
-  let extras = [];
-  document.querySelectorAll(".extra:checked").forEach(e => extras.push(e.value));
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  const role = document.getElementById("role").value;
 
-  let data = {
+  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+
+  await setDoc(doc(db, "users", userCredential.user.uid), {
+    email,
+    role
+  });
+
+  alert("Compte créé !");
+};
+
+// ================= LOGIN
+window.login = async function() {
+
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  await signInWithEmailAndPassword(auth, email, password);
+
+  alert("Connecté !");
+};
+
+// ================= LOGOUT
+window.logout = async function() {
+  await signOut(auth);
+  alert("Déconnecté !");
+};
+
+// ================= AUTH STATE
+onAuthStateChanged(auth, async (user) => {
+
+  if (user) {
+
+    currentUser = user;
+
+    const docSnap = await getDoc(doc(db, "users", user.uid));
+
+    if (docSnap.exists()) {
+      currentRole = docSnap.data().role;
+    }
+
+    document.getElementById("userInfo").innerText =
+      "Connecté : " + user.email + " (" + currentRole + ")";
+
+    // afficher ajout si vendeur
+    if (currentRole === "vendeur") {
+      document.getElementById("addCarSection").style.display = "block";
+    } else {
+      document.getElementById("addCarSection").style.display = "none";
+    }
+
+  } else {
+    currentUser = null;
+    currentRole = null;
+    document.getElementById("userInfo").innerText = "Non connecté";
+    document.getElementById("addCarSection").style.display = "none";
+  }
+
+  loadCars();
+});
+
+// ================= ADD CAR
+window.addCar = async function() {
+
+  if (!currentUser) {
+    alert("Connecte-toi !");
+    return;
+  }
+
+  await addDoc(collection(db, "cars"), {
     marque: marque.value,
     modele: modele.value,
     prix: prix.value,
     image: image.value || "https://picsum.photos/250/150",
-    annee: annee.value,
-    km: km.value,
-    ville: ville.value,
-    options: {
-      transmission: transmission.value,
-      carburant: carburant.value,
-      carrosserie: carrosserie.value,
-      couleur: couleur.value,
-      sieges: sieges.value,
-      extras
-    }
-  };
+    userId: currentUser.uid
+  });
 
-  await addDoc(collection(db, "cars"), data);
-
-  alert("Voiture ajoutée 🚗");
-
-  // RESET
-  document.querySelectorAll("input").forEach(i => i.value = "");
-  document.querySelectorAll("select").forEach(s => s.selectedIndex = 0);
-  document.querySelectorAll(".extra").forEach(e => e.checked = false);
+  alert("Voiture ajoutée");
 
   loadCars();
 };
 
-// LOAD
-window.loadCars = async function () {
+// ================= LOAD CARS
+window.loadCars = async function() {
 
   let container = document.getElementById("carList");
   container.innerHTML = "";
 
   const snapshot = await getDocs(collection(db, "cars"));
 
-  allCars = [];
-
   snapshot.forEach(doc => {
+
     let car = doc.data();
-    car.id = doc.id;
-    allCars.push(car);
-  });
-
-  renderCars(allCars);
-};
-
-// RENDER
-function renderCars(list) {
-
-  let container = document.getElementById("carList");
-  container.innerHTML = "";
-
-  list.forEach(car => {
 
     let div = document.createElement("div");
     div.className = "car";
 
     div.innerHTML = `
-      <img src="${car.image}">
+      <img src="${car.image}" width="100%">
       <h3>${car.marque} ${car.modele}</h3>
-      <p>💰 ${car.prix} FCFA</p>
-      <p>📍 ${car.ville || "-"} • ${car.annee || "-"}</p>
-      <p>⚙️ ${car.options?.transmission} • ⛽ ${car.options?.carburant}</p>
-
-      <button onclick="toggleDetails('${car.id}')">Voir détails</button>
-
-      <div id="d-${car.id}" style="display:none">
-        <p>🚗 ${car.options?.carrosserie}</p>
-        <p>🎨 ${car.options?.couleur}</p>
-        <p>🪑 ${car.options?.sieges}</p>
-        <p>⭐ ${(car.options?.extras || []).join(", ")}</p>
-      </div>
+      <p>${car.prix} FCFA</p>
     `;
 
     container.appendChild(div);
   });
-}
-
-// FILTER PRO
-window.filterCars = function () {
-
-  let searchVal = search.value.toLowerCase();
-  let max = parseInt(maxPrice.value);
-
-  let result = allCars.filter(car => {
-
-    let matchSearch = (car.marque + car.modele).toLowerCase().includes(searchVal);
-
-    let matchPrice = !max || parseInt(car.prix) <= max;
-
-    let matchTrans = !filterTransmission.value || car.options?.transmission === filterTransmission.value;
-    let matchCarb = !filterCarburant.value || car.options?.carburant === filterCarburant.value;
-    let matchCarros = !filterCarrosserie.value || car.options?.carrosserie === filterCarrosserie.value;
-    let matchCouleur = !filterCouleur.value || car.options?.couleur === filterCouleur.value;
-
-    return matchSearch && matchPrice && matchTrans && matchCarb && matchCarros && matchCouleur;
-  });
-
-  renderCars(result);
 };
-
-// DETAILS
-window.toggleDetails = function(id) {
-  let el = document.getElementById("d-" + id);
-  el.style.display = el.style.display === "none" ? "block" : "none";
-};
-
-// INIT
-window.onload = loadCars;
 
 </script>
 
