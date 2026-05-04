@@ -5,10 +5,10 @@
 </head>
 
 <body>
-										 
-									
 
 <h2>🚗 Mon garage</h2>
+
+<p id="userInfo"></p>
 
 <button onclick="logout()">Se déconnecter</button>
 
@@ -27,9 +27,6 @@
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-																					  
-																   
-																		
 
 import { 
     getAuth, 
@@ -45,10 +42,12 @@ import {
     query,
     where,
     deleteDoc,
-    doc
+    doc,
+    updateDoc,
+    getDoc
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
-// CONFIG
+// CONFIG FIREBASE
 const firebaseConfig = {
     apiKey: "AIzaSyBCtuE513iVtDMtAaXNtrpfPbXvWjUTXR4",
     authDomain: "motoafree.firebaseapp.com",
@@ -63,14 +62,29 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 // ======================
-// CHECK USER
+// USER
 // ======================
 let currentUser = null;
 
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
+
     if (user) {
         currentUser = user;
+
+        // récupérer rôle
+        const docRef = doc(db, "users", user.uid);
+        const docSnap = await getDoc(docRef);
+
+        let role = "inconnu";
+        if (docSnap.exists()) {
+            role = docSnap.data().role;
+        }
+
+        document.getElementById("userInfo").innerText =
+            "Connecté : " + user.email + " (" + role + ")";
+
         loadCars();
+
     } else {
         window.location.href = "login.html";
     }
@@ -81,12 +95,14 @@ onAuthStateChanged(auth, (user) => {
 // ======================
 window.addCar = async function () {
 
-										
     let marque = document.getElementById("marque").value;
     let modele = document.getElementById("modele").value;
     let prix = document.getElementById("prix").value;
-					 
-	 
+
+    if (!marque || !modele || !prix) {
+        alert("Remplis tous les champs !");
+        return;
+    }
 
     await addDoc(collection(db, "cars"), {
         marque,
@@ -95,11 +111,16 @@ window.addCar = async function () {
         userId: currentUser.uid
     });
 
+    // reset champs
+    document.getElementById("marque").value = "";
+    document.getElementById("modele").value = "";
+    document.getElementById("prix").value = "";
+
     loadCars();
 };
 
 // ======================
-// LOAD SELLER CARS
+// LOAD CARS
 // ======================
 async function loadCars() {
 
@@ -112,9 +133,6 @@ async function loadCars() {
     );
 
     const snapshot = await getDocs(q);
-					   
-														 
-	 
 
     snapshot.forEach((docItem) => {
 
@@ -123,8 +141,26 @@ async function loadCars() {
         let div = document.createElement("div");
 
         div.innerHTML = `
-            <p>${car.marque} ${car.modele} - ${car.prix} FCFA</p>
-            <button onclick="deleteCar('${docItem.id}')">Supprimer</button>
+            <p>
+                <b>${car.marque} ${car.modele}</b> - ${car.prix} FCFA
+            </p>
+
+            <button onclick="editCar('${docItem.id}', '${car.marque}', '${car.modele}', '${car.prix}')">
+                Modifier
+            </button>
+
+            <button onclick="deleteCar('${docItem.id}')">
+                Supprimer
+            </button>
+
+            <div id="edit-${docItem.id}" style="display:none">
+                <input id="marque-${docItem.id}" value="${car.marque}">
+                <input id="modele-${docItem.id}" value="${car.modele}">
+                <input id="prix-${docItem.id}" value="${car.prix}">
+                <button onclick="saveEdit('${docItem.id}')">Enregistrer</button>
+            </div>
+
+            <hr>
         `;
 
         container.appendChild(div);
@@ -136,7 +172,37 @@ async function loadCars() {
 // ======================
 window.deleteCar = async function(id) {
 
+    if (!confirm("Supprimer cette voiture ?")) return;
+
     await deleteDoc(doc(db, "cars", id));
+    loadCars();
+};
+
+// ======================
+// EDIT
+// ======================
+window.editCar = function(id) {
+
+    let el = document.getElementById("edit-" + id);
+
+    el.style.display = (el.style.display === "none") ? "block" : "none";
+};
+
+// ======================
+// SAVE EDIT
+// ======================
+window.saveEdit = async function(id) {
+
+    let marque = document.getElementById("marque-" + id).value;
+    let modele = document.getElementById("modele-" + id).value;
+    let prix = document.getElementById("prix-" + id).value;
+
+    await updateDoc(doc(db, "cars", id), {
+        marque,
+        modele,
+        prix
+    });
+
     loadCars();
 };
 
