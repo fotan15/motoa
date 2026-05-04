@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Connexion - Motoa</title>
+    <title>Login - Motoa</title>
 </head>
 
 <body>
@@ -13,7 +13,7 @@
 
 <button onclick="login()">Se connecter</button>
 
-<p id="msg"></p>
+<p>Pas de compte ? <a href="register.html">Créer un compte</a></p>
 
 <script type="module">
 
@@ -21,7 +21,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/fireba
 
 import { 
     getAuth, 
-    signInWithEmailAndPassword 
+    signInWithEmailAndPassword
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
 import { 
@@ -30,14 +30,11 @@ import {
     getDoc 
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
-// 🔥 CONFIG FIREBASE (motoaFree)
+// CONFIG
 const firebaseConfig = {
     apiKey: "AIzaSyBCtuE513iVtDMtAaXNtrpfPbXvWjUTXR4",
     authDomain: "motoafree.firebaseapp.com",
-    projectId: "motoafree",
-    storageBucket: "motoafree.firebasestorage.app",
-    messagingSenderId: "727661050460",
-    appId: "1:727661050460:web:72a552bb47b3fe48704499"
+    projectId: "motoafree"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -55,36 +52,38 @@ window.login = async function () {
     try {
 
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
+
         const user = userCredential.user;
 
         console.log("Connecté:", user.uid);
 
-        // 🔍 récupérer rôle
+        // 🔥 récupérer rôle
         const docRef = doc(db, "users", user.uid);
         const docSnap = await getDoc(docRef);
 
-        if (docSnap.exists()) {
+        if (!docSnap.exists()) {
+            alert("Utilisateur sans rôle !");
+            return;
+        }
 
-            let data = docSnap.data();
-            let role = data.role;
+        const role = docSnap.data().role;
 
-            console.log("Role:", role);
+        console.log("Role:", role);
 
-            // 🚀 REDIRECTION
-            if (role === "seller") {
-                window.location.href = "seller.html";
-            } else {
-                window.location.href = "index.html";
-            }
-
+        // 🚀 REDIRECTION
+        if (role === "seller") {
+            window.location.href = "seller.html";
+        } else if (role === "buyer") {
+            window.location.href = "index.html";
+        } else if (role === "admin") {
+            window.location.href = "admin.html";
         } else {
-            document.getElementById("msg").innerText = "❌ Utilisateur non trouvé";
+            alert("Rôle inconnu !");
         }
 
     } catch (error) {
-
+        alert("Erreur: " + error.message);
         console.error(error);
-        document.getElementById("msg").innerText = "❌ " + error.message;
     }
 };
 
