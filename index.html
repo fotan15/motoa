@@ -1,44 +1,68 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Motoa - Marketplace Auto</title>
 
     <style>
-        body {
-            font-family: Arial;
-            background: #f5f7fa;
-            margin: 0;
-        }
+       
+		body {
+			font-family: Arial;
+			background: #f0f2f5;
+			margin: 0;
+		}
 
-        header {
-            background: #007BFF;
-            color: white;
-            padding: 15px;
-            text-align: center;
-        }
+		header {
+			background: #007BFF;
+			color: white;
+			text-align: center;
+			padding: 15px;
+			position: sticky;
+			top: 0;
+		}
 
-        .container {
-            width: 90%;
-            margin: auto;
-        }
+		.container {
+			width: 95%;
+			margin: auto;
+		}
 
-        button {
-            padding: 10px;
-            margin: 5px;
-            border: none;
-            background: #007BFF;
-            color: white;
-            border-radius: 6px;
-        }
+		input {
+			width: 100%;
+			padding: 12px;
+			margin: 5px 0;
+			border-radius: 8px;
+			border: 1px solid #ccc;
+		}
 
-        .car {
-            background: white;
-            margin: 10px 0;
-            padding: 10px;
-            border-radius: 10px;
-        }
+		button {
+			width: 100%;
+			padding: 12px;
+			margin: 5px 0;
+			background: #007BFF;
+			color: white;
+			border: none;
+			border-radius: 8px;
+			font-size: 16px;
+		}
+
+		.car {
+			background: white;
+			margin: 10px 0;
+			border-radius: 12px;
+			overflow: hidden;
+			box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+		}
+
+		.car img {
+			width: 100%;
+			height: 180px;
+			object-fit: cover;
+		}
+
+		.car p {
+			margin: 8px;
+			font-size: 16px;
+		}
+
     </style>
 </head>
 
@@ -46,85 +70,207 @@
 
 <header>
     <h1>Motoa</h1>
-    <p id="userInfo">Chargement...</p>
+    <p>La voiture facile en Afrique</p>
+
+    <p id="userInfo">Non connecté</p>
+    <button onclick="goLogin()">Connexion</button>
+    <button onclick="logout()">Déconnexion</button>
 </header>
 
 <div class="container">
 
-    <button onclick="goLogin()">Se connecter</button>
-    <button onclick="logout()">Se déconnecter</button>
+	<h2>🚗 Voitures</h2>
 
-    <h2>Voitures disponibles</h2>
-    <div id="carList"></div>
+	<input id="search" placeholder="🔍 Rechercher (Toyota, BMW...)">
+	<input id="maxPrice" placeholder="💰 Prix max">
+
+	<button onclick="filterCars()">Filtrer</button>
+	<button onclick="resetFilter()">Reset</button>
+
+	<div id="carList"></div>
+
+	<h2>📤 Ajouter une voiture</h2>
+
+	<input id="marque" placeholder="Marque">
+	<input id="modele" placeholder="Modèle">
+	<input id="prix" placeholder="Prix">
+	<input id="image" placeholder="Image URL">
+	<input id="annee" placeholder="Année (ex: 2018)">
+	<input id="km" placeholder="Kilométrage (ex: 120000)">
+	<input id="ville" placeholder="Ville">
+
+	<select id="transmission">
+		<option value="Manuelle">Manuelle</option>
+		<option value="Automatique">Automatique</option>
+		<option value="Semi-automatique">Semi-automatique</option>
+	</select>
+
+	<select id="carburant">
+		<option>Essence</option>
+		<option>Diesel</option>
+		<option>Électrique</option>
+	</select>
+
+	<select id="carrosserie">
+		<option>Berline</option>
+		<option>SUV</option>
+		<option>Citadine</option>
+		<option>Coupé</option>
+		<option>Pickup</option>
+	</select>
+
+	<select id="couleur">
+		<option>Noir</option>
+		<option>Blanc</option>
+		<option>Gris</option>
+		<option>Bleu</option>
+		<option>Rouge</option>
+	</select>
+
+	<select id="sieges">
+		<option>2</option>
+		<option>4</option>
+		<option>5</option>
+		<option>7</option>
+	</select>
+
+	<label><input type="checkbox" value="ABS" class="extra"> ABS</label>
+	<label><input type="checkbox" value="Bluetooth" class="extra"> Bluetooth</label>
+	<label><input type="checkbox" value="GPS" class="extra"> GPS</label>
+	<label><input type="checkbox" value="Caméra" class="extra"> Caméra</label>
+
+	<button onclick="addCar()">Ajouter</button>
 
 </div>
 
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
-import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyBCtuE513iVtDMtAaXNtrpfPbXvWjUTXR4",
-    authDomain: "motoafree.firebaseapp.com",
-    projectId: "motoafree"
+  apiKey: "AIzaSyAaUWm...",
+  authDomain: "motoa-c01f7.firebaseapp.com",
+  projectId: "motoa-c01f7"
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 const db = getFirestore(app);
+const auth = getAuth(app);
 
-// AUTH
+let currentUser = null;
+
+// ================= AUTH =================
 onAuthStateChanged(auth, async (user) => {
 
-    if (user) {
+	currentUser = user;
 
-        const docRef = doc(db, "users", user.uid);
-        const docSnap = await getDoc(docRef);
+	if (!user) {
+		document.getElementById("userInfo").innerText = "Non connecté";
+		loadCars();
+		return;
+	}
 
-        let role = "unknown";
-        if (docSnap.exists()) role = docSnap.data().role;
+	const userDoc = await getDoc(doc(db, "users", user.uid));
 
-        document.getElementById("userInfo").innerText =
-            "Connecté : " + user.email + " (" + role + ")";
+	let role = "unknown";
+	if (userDoc.exists()) role = userDoc.data().role;
 
-        // redirection vendeur
-        if (role === "seller") {
-            window.location.href = "seller.html";
-            return;
-        }
+	document.getElementById("userInfo").innerText =
+		"Connecté : " + user.email + " (" + role + ")";
 
-    } else {
-        document.getElementById("userInfo").innerText = "Non connecté";
-    }
+	// REDIRECTION VENDEUR
+	if (role === "seller") {
+		window.location.href = "seller.html";
+		return;
+	}
 
-    loadCars();
+	loadCars();
 });
 
-// LOAD
-async function loadCars() {
+// ================= ADD CAR =================
+window.addCar = async function () {
 
-    let container = document.getElementById("carList");
-    container.innerHTML = "";
+	if (!currentUser) {
+		alert("Connecte-toi d'abord !");
+		return;
+	}
 
-    const snapshot = await getDocs(collection(db, "cars"));
+	let marque = document.getElementById("marque").value;
+	let modele = document.getElementById("modele").value;
+	let prix = document.getElementById("prix").value;
+	let image = document.getElementById("image").value || "https://picsum.photos/250/150";
+	let annee = document.getElementById("annee").value;
+	let km = document.getElementById("km").value;
+	let ville = document.getElementById("ville").value;
 
-    snapshot.forEach((docItem) => {
-        let car = docItem.data();
+	let transmission = document.getElementById("transmission").value;
+	let carburant = document.getElementById("carburant").value;
+	let carrosserie = document.getElementById("carrosserie").value;
+	let couleur = document.getElementById("couleur").value;
+	let sieges = document.getElementById("sieges").value;
 
-        let div = document.createElement("div");
-        div.innerHTML = `
-            <p><b>${car.marque} ${car.modele}</b> - ${car.prix}</p>
-            <hr>
-        `;
-        container.appendChild(div);
-    });
-}
+	let extras = [];
+	document.querySelectorAll(".extra:checked").forEach(e => extras.push(e.value));
 
-// NAV
+	await addDoc(collection(db, "cars"), {
+		marque,
+		modele,
+		prix,
+		image,
+		annee,
+		km,
+		ville,
+		userId: currentUser.uid,
+		options: {
+			transmission,
+			carburant,
+			carrosserie,
+			couleur,
+			sieges,
+			extras
+		}
+	});
+
+	alert("Voiture ajoutée 🚗");
+
+	loadCars();
+};
+
+// ================= LOAD CARS =================
+window.loadCars = async function () {
+
+	let container = document.getElementById("carList");
+	container.innerHTML = "";
+
+	const snapshot = await getDocs(collection(db, "cars"));
+
+	snapshot.forEach((doc) => {
+
+		let car = doc.data();
+
+		let div = document.createElement("div");
+		div.className = "car";
+
+		div.innerHTML = `
+			<img src="${car.image}">
+			<p><b>${car.marque} ${car.modele}</b></p>
+			<p>💰 ${car.prix} FCFA</p>
+			<p>📍 ${car.ville || ""}</p>
+		`;
+
+		container.appendChild(div);
+	});
+};
+
+// ================= NAV =================
 window.goLogin = () => window.location.href = "login.html";
 window.logout = () => signOut(auth);
-    
+
+window.onload = loadCars;
+
 </script>
 
 </body>
