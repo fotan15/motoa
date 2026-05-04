@@ -2,234 +2,124 @@
 <html>
 <head>
     <title>Motoa</title>
-
-    <style>
-        body { font-family: Arial; background:#f5f5f5; margin:0; }
-
-        header {
-            background:#007BFF;
-            color:white;
-            text-align:center;
-            padding:15px;
-        }
-
-        .container { width:95%; margin:auto; }
-
-        input, select, button {
-            width:100%;
-            padding:10px;
-            margin:5px 0;
-            border-radius:8px;
-        }
-
-        button { background:#007BFF; color:white; border:none; }
-
-        .car {
-            background:white;
-            margin:10px 0;
-            padding:10px;
-            border-radius:10px;
-        }
-
-        .hidden { display:none; }
-    </style>
 </head>
 
 <body>
 
-<header>
-    <h1>Motoa</h1>
-</header>
+<h1>🚗 Motoa</h1>
 
-<div class="container">
+<p id="userInfo">Non connecté</p>
 
-    <!-- 🔐 AUTH -->
-    <div id="authBox">
-        <h3>Connexion / Inscription</h3>
-        <input id="email" placeholder="Email">
-        <input id="password" type="password" placeholder="Mot de passe">
-        <button onclick="register()">S'inscrire</button>
-        <button onclick="login()">Se connecter</button>
-        <button onclick="logout()">Se déconnecter</button>
-    </div>
+<button onclick="goLogin()">Se connecter</button>
+<button onclick="logout()">Se déconnecter</button>
 
-    <!-- 🚗 PUBLIC -->
-    <h2>Voitures disponibles</h2>
-    <input id="search" placeholder="Rechercher">
-    <button onclick="loadCars()">Rechercher</button>
+<h2>Voitures disponibles</h2>
 
-    <div id="carList"></div>
-
-    <!-- 🔒 AJOUT (VISIBLE SEULEMENT CONNECTÉ) -->
-    <div id="addBox" class="hidden">
-        <h2>Ajouter une voiture</h2>
-
-        <input id="marque" placeholder="Marque">
-        <input id="modele" placeholder="Modèle">
-        <input id="prix" placeholder="Prix">
-        <input id="image" placeholder="Image URL">
-
-        <button onclick="addCar()">Ajouter</button>
-    </div>
-
-    <!-- 🏪 GARAGE -->
-    <div id="garageBox" class="hidden">
-        <h2>Mon garage</h2>
-        <div id="myCars"></div>
-    </div>
-
-</div>
+<div id="carList"></div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 
 import {
-    getFirestore,
-    collection,
-    addDoc,
-    getDocs,
-    query,
-    where
-} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
-
-import {
     getAuth,
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    signOut,
-    onAuthStateChanged
+    onAuthStateChanged,
+    signOut
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
+import {
+    getFirestore,
+    collection,
+    getDocs,
+    doc,
+    getDoc
+} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+
+// CONFIG
 const firebaseConfig = {
     apiKey: "AIzaSyBCtuE513iVtDMtAaXNtrpfPbXvWjUTXR4",
     authDomain: "motoafree.firebaseapp.com",
-    projectId: "motoafree",
-    storageBucket: "motoafree.firebasestorage.app",
-    messagingSenderId: "727661050460",
-    appId: "1:727661050460:web:72a552bb47b3fe48704499"
+    projectId: "motoafree"
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
 const auth = getAuth(app);
+const db = getFirestore(app);
 
-let currentUser = null;
-
-window.register = async function () {
-    const email = document.getElementById("email").value;
-    const pass = document.getElementById("password").value;
-
-    await createUserWithEmailAndPassword(auth, email, pass);
-    alert("Compte créé !");
-};
-
-window.login = async function () {
-    const email = document.getElementById("email").value;
-    const pass = document.getElementById("password").value;
-
-    await signInWithEmailAndPassword(auth, email, pass);
-};
-
-window.logout = async function () {
-    await signOut(auth);
-};
-
-onAuthStateChanged(auth, (user) => {
-
-    currentUser = user;
+// ======================
+// AUTH CHECK
+// ======================
+onAuthStateChanged(auth, async (user) => {
 
     if (user) {
-        document.getElementById("addBox").classList.remove("hidden");
-        document.getElementById("garageBox").classList.remove("hidden");
-        loadMyCars();
-    } else {
-        document.getElementById("addBox").classList.add("hidden");
-        document.getElementById("garageBox").classList.add("hidden");
-    }
 
+        console.log("Utilisateur connecté:", user.email);
+
+        // 🔍 récupérer rôle
+        const docRef = doc(db, "users", user.uid);
+        const docSnap = await getDoc(docRef);
+
+        let role = "unknown";
+
+        if (docSnap.exists()) {
+            role = docSnap.data().role;
+        }
+
+        // 👤 afficher utilisateur
+        document.getElementById("userInfo").innerText =
+            "Connecté : " + user.email + " (" + role + ")";
+
+        // 🔥 REDIRECTION VENDEUR
+        if (role === "seller") {
+            window.location.href = "seller.html";
+            return;
+        }
+
+        loadCars();
+
+    } else {
+
+        document.getElementById("userInfo").innerText = "Non connecté";
+        loadCars();
+    }
 });
 
-window.addCar = async function () {
+// ======================
+// LOAD CARS
+// ======================
+async function loadCars() {
 
-    if (!currentUser) {
-        alert("Connecte-toi !");
-        return;
-    }
-
-    let marque = document.getElementById("marque").value;
-    let modele = document.getElementById("modele").value;
-    let prix = document.getElementById("prix").value;
-    let image = document.getElementById("image").value;
-
-    if (!image) image = "https://picsum.photos/200";
-
-    await addDoc(collection(db, "cars"), {
-        marque,
-        modele,
-        prix,
-        image,
-        userId: currentUser.uid
-    });
-
-    alert("Voiture ajoutée 🚗");
-
-    document.getElementById("marque").value = "";
-    document.getElementById("modele").value = "";
-    document.getElementById("prix").value = "";
-    document.getElementById("image").value = "";
-
-    loadCars();
-    loadMyCars();
-};
-
-window.loadCars = async function () {
-
-    const container = document.getElementById("carList");
+    let container = document.getElementById("carList");
     container.innerHTML = "";
 
     const snapshot = await getDocs(collection(db, "cars"));
 
-    snapshot.forEach(doc => {
-        const car = doc.data();
+    snapshot.forEach((docItem) => {
 
-        container.innerHTML += `
-            <div class="car">
-                <img src="${car.image}" width="100%">
-                <p>${car.marque} ${car.modele}</p>
-                <p>${car.prix} €</p>
-            </div>
+        let car = docItem.data();
+
+        let div = document.createElement("div");
+
+        div.innerHTML = `
+            <p>
+                <b>${car.marque} ${car.modele}</b> - ${car.prix} FCFA
+            </p>
+            <hr>
         `;
+
+        container.appendChild(div);
     });
+}
+
+// ======================
+// NAVIGATION
+// ======================
+window.goLogin = function () {
+    window.location.href = "login.html";
 };
 
-window.loadMyCars = async function () {
-
-    if (!currentUser) return;
-
-    const container = document.getElementById("myCars");
-    container.innerHTML = "";
-
-    const q = query(
-        collection(db, "cars"),
-        where("userId", "==", currentUser.uid)
-    );
-
-    const snapshot = await getDocs(q);
-
-    snapshot.forEach(doc => {
-        const car = doc.data();
-
-        container.innerHTML += `
-            <div class="car">
-                <p>${car.marque} ${car.modele}</p>
-            </div>
-        `;
-    });
-};
-
-window.onload = function () {
-    loadCars();
+window.logout = function () {
+    signOut(auth);
 };
 
 </script>
