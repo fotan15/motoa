@@ -1,29 +1,118 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Garage vendeur - Motoa</title>
+
+    <style>
+
+        body {
+            font-family: Arial;
+            background: #f0f2f5;
+            margin: 0;
+        }
+
+        header {
+            background: #28a745;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+        }
+
+        .container {
+            width: 95%;
+            margin: auto;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 5px 0;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            padding: 10px;
+            margin: 5px 0;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: #28a745;
+            color: white;
+            width: 100%;
+        }
+
+        .btn-danger {
+            background: red;
+            color: white;
+        }
+
+        .btn-edit {
+            background: orange;
+            color: white;
+        }
+
+        .btn-logout {
+            background: black;
+            color: white;
+            width: 100%;
+        }
+
+        .car {
+            background: white;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .edit-box {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+    </style>
 </head>
 
 <body>
 
-<h1>TEST SELLER V2</h1>
-<h2>🚗 Mon garage</h2>
+<header>
+    <h2>🚗 Mon garage</h2>
+    <p id="userInfo">Chargement...</p>
+</header>
 
-<p id="userInfo">Chargement...</p>
+<div class="container">
 
-<button onclick="logout()">Se déconnecter</button>
+    <button class="btn-logout" onclick="logout()">Se déconnecter</button>
 
-<h3>Ajouter une voiture</h3>
+    <h3>➕ Ajouter une voiture</h3>
 
-<input id="marque" placeholder="Marque"><br><br>
-<input id="modele" placeholder="Modèle"><br><br>
-<input id="prix" placeholder="Prix"><br><br>
+    <input id="marque" placeholder="Marque">
+    <input id="modele" placeholder="Modèle">
+    <input id="prix" placeholder="Prix">
 
-<button onclick="addCar()">Ajouter</button>
+    <button class="btn-primary" onclick="addCar()">Ajouter</button>
 
-<h3>Mes voitures</h3>
+    <h3>📦 Mes voitures</h3>
 
-<div id="carList"></div>
+    <div id="carList"></div>
+
+</div>
 
 <script type="module">
 
@@ -61,12 +150,8 @@ const db = getFirestore(app);
 
 let currentUser = null;
 
-// ======================
-// AUTH CHECK
-// ======================
+// AUTH
 onAuthStateChanged(auth, async (user) => {
-
-    console.log("Auth state:", user);
 
     if (!user) {
         alert("Non connecté !");
@@ -76,30 +161,23 @@ onAuthStateChanged(auth, async (user) => {
 
     currentUser = user;
 
-    // afficher email
     document.getElementById("userInfo").innerText =
         "Connecté : " + user.email;
-
-    console.log("Utilisateur connecté:", user.uid);
 
     loadCars();
 });
 
-// ======================
 // ADD
-// ======================
 window.addCar = async function () {
-
-    if (!currentUser) {
-        alert("Utilisateur non prêt");
-        return;
-    }
 
     let marque = document.getElementById("marque").value;
     let modele = document.getElementById("modele").value;
     let prix = document.getElementById("prix").value;
 
-    console.log("Ajout voiture avec UID:", currentUser.uid);
+    if (!marque || !modele || !prix) {
+        alert("Remplis tous les champs !");
+        return;
+    }
 
     await addDoc(collection(db, "cars"), {
         marque,
@@ -108,17 +186,18 @@ window.addCar = async function () {
         userId: currentUser.uid
     });
 
-    alert("Voiture ajoutée");
+    alert("Voiture ajoutée 🚗");
+
+    // reset champs
+    document.getElementById("marque").value = "";
+    document.getElementById("modele").value = "";
+    document.getElementById("prix").value = "";
 
     loadCars();
 };
 
-// ======================
 // LOAD
-// ======================
 async function loadCars() {
-
-    console.log("Chargement voitures...");
 
     let container = document.getElementById("carList");
     container.innerHTML = "";
@@ -130,45 +209,36 @@ async function loadCars() {
 
     const snapshot = await getDocs(q);
 
-    console.log("Nombre voitures:", snapshot.size);
-
     snapshot.forEach((docItem) => {
 
         let car = docItem.data();
 
         let div = document.createElement("div");
+        div.className = "car";
 
         div.innerHTML = `
-            <p>${car.marque} ${car.modele} - ${car.prix}</p>
+            <p><b>${car.marque} ${car.modele}</b></p>
+            <p>💰 ${car.prix} FCFA</p>
 
-            <button onclick="deleteCar('${docItem.id}')">
-                Supprimer
-            </button>
+            <div class="actions">
+                <button class="btn-danger" onclick="deleteCar('${docItem.id}')">Supprimer</button>
+                <button class="btn-edit" onclick="showEdit('${docItem.id}')">Modifier</button>
+            </div>
 
-            <button onclick="showEdit('${docItem.id}')">
-                Modifier
-            </button>
-
-            <div id="edit-${docItem.id}" style="display:none">
+            <div id="edit-${docItem.id}" class="edit-box" style="display:none">
                 <input id="m-${docItem.id}" value="${car.marque}">
                 <input id="mo-${docItem.id}" value="${car.modele}">
                 <input id="p-${docItem.id}" value="${car.prix}">
-                <button onclick="saveEdit('${docItem.id}')">OK</button>
+                <button class="btn-primary" onclick="saveEdit('${docItem.id}')">Enregistrer</button>
             </div>
-
-            <hr>
         `;
 
         container.appendChild(div);
     });
 }
 
-// ======================
 // DELETE
-// ======================
 window.deleteCar = async function(id) {
-
-    console.log("Suppression:", id);
 
     await deleteDoc(doc(db, "cars", id));
 
@@ -177,9 +247,7 @@ window.deleteCar = async function(id) {
     loadCars();
 };
 
-// ======================
-// EDIT SHOW
-// ======================
+// SHOW EDIT
 window.showEdit = function(id) {
 
     let el = document.getElementById("edit-" + id);
@@ -187,16 +255,12 @@ window.showEdit = function(id) {
     el.style.display = (el.style.display === "none") ? "block" : "none";
 };
 
-// ======================
 // SAVE EDIT
-// ======================
 window.saveEdit = async function(id) {
 
     let marque = document.getElementById("m-" + id).value;
     let modele = document.getElementById("mo-" + id).value;
     let prix = document.getElementById("p-" + id).value;
-
-    console.log("Update:", id);
 
     await updateDoc(doc(db, "cars", id), {
         marque,
@@ -209,9 +273,7 @@ window.saveEdit = async function(id) {
     loadCars();
 };
 
-// ======================
 // LOGOUT
-// ======================
 window.logout = function () {
     signOut(auth);
 };
