@@ -1,24 +1,97 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inscription - Motoa</title>
+
+    <style>
+
+        body {
+            font-family: Arial;
+            background: #f0f2f5;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .box {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            width: 320px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            background: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .msg {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        a {
+            display: block;
+            text-align: center;
+            margin-top: 10px;
+            text-decoration: none;
+            color: #007BFF;
+        }
+
+    </style>
 </head>
 
 <body>
 
-<h2>Créer un compte</h2>
+<div class="box">
 
-<input id="email" placeholder="Email"><br><br>
-<input id="password" type="password" placeholder="Mot de passe"><br><br>
+    <h2>📝 Inscription</h2>
 
-<select id="role">
-    <option value="buyer">Acheteur</option>
-    <option value="seller">Vendeur</option>
-</select><br><br>
+    <input id="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Mot de passe">
 
-<button onclick="register()">S'inscrire</button>
+    <select id="role">
+        <option value="buyer">Acheteur</option>
+        <option value="seller">Vendeur</option>
+    </select>
 
-<p id="msg"></p>
+    <button onclick="register()">Créer un compte</button>
+
+    <p id="msg" class="msg"></p>
+
+    <a href="login.html">Déjà un compte ? Se connecter</a>
+
+</div>
 
 <script type="module">
 
@@ -35,7 +108,7 @@ import {
     setDoc 
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
-// 🔥 CONFIG FIREBASE (TON PROJET motoaFree)
+// CONFIG FIREBASE
 const firebaseConfig = {
     apiKey: "AIzaSyBCtuE513iVtDMtAaXNtrpfPbXvWjUTXR4",
     authDomain: "motoafree.firebaseapp.com",
@@ -49,25 +122,23 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// ======================
 // REGISTER
-// ======================
 window.register = async function () {
 
     let email = document.getElementById("email").value;
     let password = document.getElementById("password").value;
     let role = document.getElementById("role").value;
 
+    if (!email || !password) {
+        document.getElementById("msg").innerText = "⚠️ Remplis tous les champs";
+        return;
+    }
+
     try {
 
-        // 🔐 création du compte auth
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-
         const user = userCredential.user;
 
-        console.log("Utilisateur créé:", user.uid);
-
-        // 💾 sauvegarde dans Firestore
         await setDoc(doc(db, "users", user.uid), {
             email: email,
             role: role
@@ -75,7 +146,6 @@ window.register = async function () {
 
         document.getElementById("msg").innerText = "✅ Compte créé avec succès";
 
-        // 🔁 redirection
         setTimeout(() => {
             window.location.href = "login.html";
         }, 1500);
@@ -83,7 +153,6 @@ window.register = async function () {
     } catch (error) {
 
         console.error(error);
-
         document.getElementById("msg").innerText = "❌ " + error.message;
     }
 };
