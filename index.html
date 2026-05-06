@@ -150,9 +150,26 @@
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
+import { 
+    getFirestore, 
+    collection, 
+    addDoc, 
+    getDocs,
+    doc,
+    getDoc,
+    query,
+    where,
+    deleteDoc
+} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+
+import { 
+    getAuth, 
+    onAuthStateChanged, 
+    signOut 
+} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+
+// CONFIG
 const firebaseConfig = {
     apiKey: "AIzaSyBCtuE513iVtDMtAaXNtrpfPbXvWjUTXR4",
     authDomain: "motoafree.firebaseapp.com",
@@ -196,7 +213,6 @@ onAuthStateChanged(auth, async (user) => {
 	loginBtn.style.display = "none";
 	logoutBtn.style.display = "block";
 
-	// 🔥 LOGIQUE PRINCIPALE
 	if (currentRole === "seller") {
 		addSection.style.display = "block";
 	} else {
@@ -206,28 +222,50 @@ onAuthStateChanged(auth, async (user) => {
 	loadCars();
 });
 
-// ================= ADD CAR =================
-window.addCar = async function () {
+// ================= FAVORIS =================
+async function isFavorite(carId) {
 
-	if (!currentUser || currentRole !== "seller") {
-		alert("Accès refusé !");
+	if (!currentUser) return false;
+
+	const q = query(
+		collection(db, "favorites"),
+		where("userId", "==", currentUser.uid),
+		where("carId", "==", carId)
+	);
+
+	const snapshot = await getDocs(q);
+
+	return !snapshot.empty;
+}
+
+window.toggleFavorite = async function(carId) {
+
+	if (!currentUser) {
+		alert("Connecte-toi !");
 		return;
 	}
 
-	let marque = document.getElementById("marque").value;
-	let modele = document.getElementById("modele").value;
-	let prix = document.getElementById("prix").value;
-	let image = document.getElementById("image").value || "https://picsum.photos/250/150";
+	const q = query(
+		collection(db, "favorites"),
+		where("userId", "==", currentUser.uid),
+		where("carId", "==", carId)
+	);
 
-	await addDoc(collection(db, "cars"), {
-		marque,
-		modele,
-		prix,
-		image,
-		userId: currentUser.uid
-	});
+	const snapshot = await getDocs(q);
 
-	alert("Voiture ajoutée 🚗");
+	if (!snapshot.empty) {
+		// supprimer
+		snapshot.forEach(async (docItem) => {
+			await deleteDoc(doc(db, "favorites", docItem.id));
+		});
+	} else {
+		// ajouter
+		await addDoc(collection(db, "favorites"), {
+			userId: currentUser.uid,
+			carId: carId
+		});
+	}
+
 	loadCars();
 };
 
@@ -239,9 +277,10 @@ window.loadCars = async function () {
 
 	const snapshot = await getDocs(collection(db, "cars"));
 
-	snapshot.forEach((doc) => {
+	for (const docItem of snapshot.docs) {
 
-		let car = doc.data();
+		let car = docItem.data();
+		let fav = await isFavorite(docItem.id);
 
 		let div = document.createElement("div");
 		div.className = "car";
@@ -250,10 +289,14 @@ window.loadCars = async function () {
 			<img src="${car.image}">
 			<p><b>${car.marque} ${car.modele}</b></p>
 			<p>💰 ${car.prix} FCFA</p>
+
+			<button onclick="toggleFavorite('${docItem.id}')">
+				${fav ? "❤️ Retirer" : "🤍 Favori"}
+			</button>
 		`;
 
 		container.appendChild(div);
-	});
+	}
 };
 
 // NAV
