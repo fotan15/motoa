@@ -88,57 +88,62 @@
 
 	<div id="carList"></div>
 
-	<h2>📤 Ajouter une voiture</h2>
+	<!-- 🔥 SECTION VENDEUR UNIQUEMENT -->
+	<div id="addSection">
 
-	<input id="marque" placeholder="Marque">
-	<input id="modele" placeholder="Modèle">
-	<input id="prix" placeholder="Prix">
-	<input id="image" placeholder="Image URL">
-	<input id="annee" placeholder="Année">
-	<input id="km" placeholder="Kilométrage">
-	<input id="ville" placeholder="Ville">
+		<h2>📤 Ajouter une voiture</h2>
 
-	<select id="transmission">
-		<option value="Manuelle">Manuelle</option>
-		<option value="Automatique">Automatique</option>
-		<option value="Semi-automatique">Semi-automatique</option>
-	</select>
+		<input id="marque" placeholder="Marque">
+		<input id="modele" placeholder="Modèle">
+		<input id="prix" placeholder="Prix">
+		<input id="image" placeholder="Image URL">
+		<input id="annee" placeholder="Année">
+		<input id="km" placeholder="Kilométrage">
+		<input id="ville" placeholder="Ville">
 
-	<select id="carburant">
-		<option>Essence</option>
-		<option>Diesel</option>
-		<option>Électrique</option>
-	</select>
+		<select id="transmission">
+			<option value="Manuelle">Manuelle</option>
+			<option value="Automatique">Automatique</option>
+			<option value="Semi-automatique">Semi-automatique</option>
+		</select>
 
-	<select id="carrosserie">
-		<option>Berline</option>
-		<option>SUV</option>
-		<option>Citadine</option>
-		<option>Coupé</option>
-		<option>Pickup</option>
-	</select>
+		<select id="carburant">
+			<option>Essence</option>
+			<option>Diesel</option>
+			<option>Électrique</option>
+		</select>
 
-	<select id="couleur">
-		<option>Noir</option>
-		<option>Blanc</option>
-		<option>Gris</option>
-		<option>Bleu</option>
-		<option>Rouge</option>
-	</select>
+		<select id="carrosserie">
+			<option>Berline</option>
+			<option>SUV</option>
+			<option>Citadine</option>
+			<option>Coupé</option>
+			<option>Pickup</option>
+		</select>
 
-	<select id="sieges">
-		<option>2</option>
-		<option>4</option>
-		<option>5</option>
-		<option>7</option>
-	</select>
+		<select id="couleur">
+			<option>Noir</option>
+			<option>Blanc</option>
+			<option>Gris</option>
+			<option>Bleu</option>
+			<option>Rouge</option>
+		</select>
 
-	<label><input type="checkbox" value="ABS" class="extra"> ABS</label>
-	<label><input type="checkbox" value="Bluetooth" class="extra"> Bluetooth</label>
-	<label><input type="checkbox" value="GPS" class="extra"> GPS</label>
-	<label><input type="checkbox" value="Caméra" class="extra"> Caméra</label>
+		<select id="sieges">
+			<option>2</option>
+			<option>4</option>
+			<option>5</option>
+			<option>7</option>
+		</select>
 
-	<button onclick="addCar()">Ajouter</button>
+		<label><input type="checkbox" value="ABS" class="extra"> ABS</label>
+		<label><input type="checkbox" value="Bluetooth" class="extra"> Bluetooth</label>
+		<label><input type="checkbox" value="GPS" class="extra"> GPS</label>
+		<label><input type="checkbox" value="Caméra" class="extra"> Caméra</label>
+
+		<button onclick="addCar()">Ajouter</button>
+
+	</div>
 
 </div>
 
@@ -148,7 +153,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/fireba
 import { getFirestore, collection, addDoc, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
-// ✅ CONFIG CORRIGÉE (motoaFree)
 const firebaseConfig = {
     apiKey: "AIzaSyBCtuE513iVtDMtAaXNtrpfPbXvWjUTXR4",
     authDomain: "motoafree.firebaseapp.com",
@@ -163,6 +167,7 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 let currentUser = null;
+let currentRole = null;
 
 // ================= AUTH =================
 onAuthStateChanged(auth, async (user) => {
@@ -171,23 +176,32 @@ onAuthStateChanged(auth, async (user) => {
 
 	const loginBtn = document.getElementById("loginBtn");
 	const logoutBtn = document.getElementById("logoutBtn");
+	const addSection = document.getElementById("addSection");
 
 	if (!user) {
 		document.getElementById("userInfo").innerText = "Non connecté";
 		loginBtn.style.display = "block";
 		logoutBtn.style.display = "none";
+		addSection.style.display = "none";
 		loadCars();
 		return;
 	}
 
 	const userDoc = await getDoc(doc(db, "users", user.uid));
-	let role = userDoc.exists() ? userDoc.data().role : "unknown";
+	currentRole = userDoc.exists() ? userDoc.data().role : "unknown";
 
 	document.getElementById("userInfo").innerText =
-		"Connecté : " + user.email + " (" + role + ")";
+		"Connecté : " + user.email + " (" + currentRole + ")";
 
 	loginBtn.style.display = "none";
 	logoutBtn.style.display = "block";
+
+	// 🔥 LOGIQUE PRINCIPALE
+	if (currentRole === "seller") {
+		addSection.style.display = "block";
+	} else {
+		addSection.style.display = "none";
+	}
 
 	loadCars();
 });
@@ -195,8 +209,8 @@ onAuthStateChanged(auth, async (user) => {
 // ================= ADD CAR =================
 window.addCar = async function () {
 
-	if (!currentUser) {
-		alert("Connecte-toi d'abord !");
+	if (!currentUser || currentRole !== "seller") {
+		alert("Accès refusé !");
 		return;
 	}
 
@@ -204,33 +218,16 @@ window.addCar = async function () {
 	let modele = document.getElementById("modele").value;
 	let prix = document.getElementById("prix").value;
 	let image = document.getElementById("image").value || "https://picsum.photos/250/150";
-	let annee = document.getElementById("annee").value;
-	let km = document.getElementById("km").value;
-	let ville = document.getElementById("ville").value;
-
-	let transmission = document.getElementById("transmission").value;
-	let carburant = document.getElementById("carburant").value;
-	let carrosserie = document.getElementById("carrosserie").value;
-	let couleur = document.getElementById("couleur").value;
-	let sieges = document.getElementById("sieges").value;
-
-	let extras = [];
-	document.querySelectorAll(".extra:checked").forEach(e => extras.push(e.value));
 
 	await addDoc(collection(db, "cars"), {
 		marque,
 		modele,
 		prix,
 		image,
-		annee,
-		km,
-		ville,
-		userId: currentUser.uid,
-		options: { transmission, carburant, carrosserie, couleur, sieges, extras }
+		userId: currentUser.uid
 	});
 
 	alert("Voiture ajoutée 🚗");
-
 	loadCars();
 };
 
@@ -253,14 +250,13 @@ window.loadCars = async function () {
 			<img src="${car.image}">
 			<p><b>${car.marque} ${car.modele}</b></p>
 			<p>💰 ${car.prix} FCFA</p>
-			<p>📍 ${car.ville || ""}</p>
 		`;
 
 		container.appendChild(div);
 	});
 };
 
-// ================= NAV =================
+// NAV
 window.goLogin = () => window.location.href = "login.html";
 window.logout = () => signOut(auth);
 
