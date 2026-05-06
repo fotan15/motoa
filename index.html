@@ -4,7 +4,6 @@
     <title>Motoa - Marketplace Auto</title>
 
     <style>
-       
 		body {
 			font-family: Arial;
 			background: #f0f2f5;
@@ -62,7 +61,6 @@
 			margin: 8px;
 			font-size: 16px;
 		}
-
     </style>
 </head>
 
@@ -72,9 +70,10 @@
     <h1>Motoa</h1>
     <p>La voiture facile en Afrique</p>
 
-    <p id="userInfo">Non connecté</p>
-    <button onclick="goLogin()">Connexion</button>
-    <button onclick="logout()">Déconnexion</button>
+    <p id="userInfo">Chargement...</p>
+
+    <button id="loginBtn" onclick="goLogin()">Connexion</button>
+    <button id="logoutBtn" onclick="logout()">Déconnexion</button>
 </header>
 
 <div class="container">
@@ -95,8 +94,8 @@
 	<input id="modele" placeholder="Modèle">
 	<input id="prix" placeholder="Prix">
 	<input id="image" placeholder="Image URL">
-	<input id="annee" placeholder="Année (ex: 2018)">
-	<input id="km" placeholder="Kilométrage (ex: 120000)">
+	<input id="annee" placeholder="Année">
+	<input id="km" placeholder="Kilométrage">
 	<input id="ville" placeholder="Ville">
 
 	<select id="transmission">
@@ -146,14 +145,17 @@
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
+// ✅ CONFIG CORRIGÉE (motoaFree)
 const firebaseConfig = {
-  apiKey: "AIzaSyAaUWm...",
-  authDomain: "motoa-c01f7.firebaseapp.com",
-  projectId: "motoa-c01f7"
+    apiKey: "AIzaSyBCtuE513iVtDMtAaXNtrpfPbXvWjUTXR4",
+    authDomain: "motoafree.firebaseapp.com",
+    projectId: "motoafree",
+    storageBucket: "motoafree.firebasestorage.app",
+    messagingSenderId: "727661050460",
+    appId: "1:727661050460:web:72a552bb47b3fe48704499"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -167,25 +169,25 @@ onAuthStateChanged(auth, async (user) => {
 
 	currentUser = user;
 
+	const loginBtn = document.getElementById("loginBtn");
+	const logoutBtn = document.getElementById("logoutBtn");
+
 	if (!user) {
 		document.getElementById("userInfo").innerText = "Non connecté";
+		loginBtn.style.display = "block";
+		logoutBtn.style.display = "none";
 		loadCars();
 		return;
 	}
 
 	const userDoc = await getDoc(doc(db, "users", user.uid));
-
-	let role = "unknown";
-	if (userDoc.exists()) role = userDoc.data().role;
+	let role = userDoc.exists() ? userDoc.data().role : "unknown";
 
 	document.getElementById("userInfo").innerText =
 		"Connecté : " + user.email + " (" + role + ")";
 
-	// REDIRECTION VENDEUR
-	if (role === "seller") {
-		window.location.href = "seller.html";
-		return;
-	}
+	loginBtn.style.display = "none";
+	logoutBtn.style.display = "block";
 
 	loadCars();
 });
@@ -224,14 +226,7 @@ window.addCar = async function () {
 		km,
 		ville,
 		userId: currentUser.uid,
-		options: {
-			transmission,
-			carburant,
-			carrosserie,
-			couleur,
-			sieges,
-			extras
-		}
+		options: { transmission, carburant, carrosserie, couleur, sieges, extras }
 	});
 
 	alert("Voiture ajoutée 🚗");
@@ -239,7 +234,7 @@ window.addCar = async function () {
 	loadCars();
 };
 
-// ================= LOAD CARS =================
+// ================= LOAD =================
 window.loadCars = async function () {
 
 	let container = document.getElementById("carList");
@@ -268,8 +263,6 @@ window.loadCars = async function () {
 // ================= NAV =================
 window.goLogin = () => window.location.href = "login.html";
 window.logout = () => signOut(auth);
-
-window.onload = loadCars;
 
 </script>
 
