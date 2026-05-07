@@ -1,89 +1,242 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html>
 <head>
+    <title>Garage vendeur - Motoa</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Garage vendeur - Motoa</title>
 
     <style>
 
-        body {
-            font-family: Arial;
-            background: #f0f2f5;
-            margin: 0;
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
         }
 
-        header {
-            background: #28a745;
-            color: white;
-            padding: 15px;
-            text-align: center;
-            position: sticky;
-            top: 0;
+        body{
+            font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+            background:#f0f2f5;
+            padding-bottom:50px;
         }
 
-        .container {
-            width: 95%;
-            margin: auto;
+        header{
+            background:linear-gradient(135deg,#28a745,#1e7e34);
+            color:white;
+            text-align:center;
+            padding:20px;
+            position:sticky;
+            top:0;
+            z-index:100;
+            box-shadow:0 2px 10px rgba(0,0,0,0.1);
         }
 
-        input {
-            width: 100%;
-            padding: 12px;
-            margin: 5px 0;
-            border-radius: 8px;
-            border: 1px solid #ccc;
+        header h1{
+            font-size:2em;
+            margin-bottom:5px;
         }
 
-        button {
-            padding: 10px;
-            margin: 5px 0;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            cursor: pointer;
+        .container{
+            width:95%;
+            max-width:1200px;
+            margin:auto;
         }
 
-        .btn-primary {
-            background: #28a745;
-            color: white;
-            width: 100%;
+        .user-info{
+            background:rgba(255,255,255,0.2);
+            padding:10px;
+            border-radius:8px;
+            margin-top:10px;
+            font-size:14px;
         }
 
-        .btn-danger {
-            background: red;
-            color: white;
+        .logoutBtn{
+            margin-top:15px;
+            background:#dc3545;
         }
 
-        .btn-edit {
-            background: orange;
-            color: white;
+        .logoutBtn:hover{
+            background:#c82333;
         }
 
-        .btn-logout {
-            background: black;
-            color: white;
-            width: 100%;
+        .section{
+            background:white;
+            margin:20px 0;
+            padding:20px;
+            border-radius:12px;
+            box-shadow:0 2px 5px rgba(0,0,0,0.1);
         }
 
-        .car {
-            background: white;
-            margin: 10px 0;
-            padding: 10px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        .section h2{
+            margin-bottom:15px;
+            color:#333;
         }
 
-        .actions {
-            display: flex;
-            gap: 5px;
+        input,select{
+            width:100%;
+            padding:12px;
+            margin:8px 0;
+            border-radius:8px;
+            border:1px solid #ddd;
+            font-size:14px;
         }
 
-        .edit-box {
-            background: #f9f9f9;
-            padding: 10px;
-            border-radius: 8px;
-            margin-top: 10px;
+        input:focus,select:focus{
+            outline:none;
+            border-color:#28a745;
+        }
+
+        button{
+            width:100%;
+            padding:12px;
+            margin:8px 0;
+            border:none;
+            border-radius:8px;
+            font-size:15px;
+            cursor:pointer;
+            transition:0.2s;
+        }
+
+        button:hover{
+            transform:translateY(-2px);
+        }
+
+        .btn-primary{
+            background:#28a745;
+            color:white;
+        }
+
+        .btn-primary:hover{
+            background:#218838;
+        }
+
+        .btn-danger{
+            background:#dc3545;
+            color:white;
+        }
+
+        .btn-danger:hover{
+            background:#c82333;
+        }
+
+        .btn-edit{
+            background:#ff9800;
+            color:white;
+        }
+
+        .btn-edit:hover{
+            background:#e68900;
+        }
+
+        .cars-grid{
+            display:grid;
+            grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+            gap:20px;
+            margin-top:20px;
+        }
+
+        .car{
+            background:white;
+            border-radius:12px;
+            overflow:hidden;
+            box-shadow:0 2px 5px rgba(0,0,0,0.1);
+            transition:0.3s;
+        }
+
+        .car:hover{
+            transform:translateY(-5px);
+            box-shadow:0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .car img{
+            width:100%;
+            height:200px;
+            object-fit:cover;
+        }
+
+        .car-content{
+            padding:15px;
+        }
+
+        .car-title{
+            font-size:20px;
+            font-weight:bold;
+            color:#28a745;
+            margin-bottom:10px;
+        }
+
+        .car-price{
+            font-size:22px;
+            font-weight:bold;
+            color:#007BFF;
+            margin-bottom:10px;
+        }
+
+        .car-details{
+            display:flex;
+            gap:10px;
+            flex-wrap:wrap;
+            margin-bottom:15px;
+            color:#666;
+            font-size:13px;
+        }
+
+        .actions{
+            display:flex;
+            gap:10px;
+        }
+
+        .actions button{
+            flex:1;
+        }
+
+        .edit-box{
+            margin-top:15px;
+            background:#f9f9f9;
+            padding:15px;
+            border-radius:10px;
+        }
+
+        .filter-buttons{
+            display:flex;
+            gap:10px;
+        }
+
+        .filter-buttons button{
+            flex:1;
+        }
+
+        .stats{
+            background:white;
+            padding:15px;
+            border-radius:10px;
+            margin-top:15px;
+            text-align:center;
+            color:#666;
+            font-size:14px;
+        }
+
+        .empty-state{
+            background:white;
+            padding:40px;
+            border-radius:12px;
+            text-align:center;
+            color:#888;
+            margin-top:20px;
+        }
+
+        @media(max-width:768px){
+
+            .cars-grid{
+                grid-template-columns:1fr;
+            }
+
+            .actions{
+                flex-direction:column;
+            }
+
+            .filter-buttons{
+                flex-direction:column;
+            }
         }
 
     </style>
@@ -92,25 +245,86 @@
 <body>
 
 <header>
-    <h2>🚗 Mon garage</h2>
-    <p id="userInfo">Chargement...</p>
+
+    <h1>🚗 Motoa Seller</h1>
+    <p>Gestion intelligente de votre garage</p>
+
+    <div class="user-info" id="userInfo">
+        Chargement...
+    </div>
+
+    <button class="logoutBtn" onclick="logout()">
+        🚪 Déconnexion
+    </button>
+
 </header>
 
 <div class="container">
 
-    <button class="btn-logout" onclick="logout()">Se déconnecter</button>
+    <!-- AJOUT VOITURE -->
+    <div class="section">
 
-    <h3>➕ Ajouter une voiture</h3>
+        <h2>➕ Ajouter une voiture</h2>
 
-    <input id="marque" placeholder="Marque">
-    <input id="modele" placeholder="Modèle">
-    <input id="prix" placeholder="Prix">
+        <input id="marque" placeholder="Marque">
+        <input id="modele" placeholder="Modèle">
+        <input id="prix" placeholder="Prix">
+        <input id="image" placeholder="URL image">
+        <input id="annee" placeholder="Année">
+        <input id="ville" placeholder="Ville">
 
-    <button class="btn-primary" onclick="addCar()">Ajouter</button>
+        <select id="carburant">
+            <option>Essence</option>
+            <option>Diesel</option>
+            <option>Électrique</option>
+        </select>
 
-    <h3>📦 Mes voitures</h3>
+        <button class="btn-primary" onclick="addCar()">
+            🚗 Ajouter la voiture
+        </button>
 
-    <div id="carList"></div>
+    </div>
+
+    <!-- FILTRE -->
+    <div class="section">
+
+        <h2>🔍 Rechercher des voitures</h2>
+
+        <input id="search" placeholder="Toyota, BMW, Mercedes...">
+        <input id="maxPrice" placeholder="Prix maximum">
+
+        <div class="filter-buttons">
+            <button class="btn-primary" onclick="filterCars()">
+                Filtrer
+            </button>
+
+            <button class="btn-edit" onclick="resetFilter()">
+                Reset
+            </button>
+        </div>
+
+    </div>
+
+    <!-- STATS -->
+    <div class="stats" id="stats"></div>
+
+    <!-- MES VOITURES -->
+    <div class="section">
+
+        <h2>📦 Mes voitures</h2>
+
+        <div id="myCars" class="cars-grid"></div>
+
+    </div>
+
+    <!-- TOUTES LES VOITURES -->
+    <div class="section">
+
+        <h2>🌍 Toutes les voitures</h2>
+
+        <div id="allCars" class="cars-grid"></div>
+
+    </div>
 
 </div>
 
@@ -118,30 +332,32 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 
-import { 
-    getAuth, 
+import {
+    getAuth,
     onAuthStateChanged,
     signOut
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
-import { 
-    getFirestore, 
-    collection, 
-    addDoc, 
+import {
+    getFirestore,
+    collection,
+    addDoc,
     getDocs,
     query,
     where,
     deleteDoc,
     doc,
-    updateDoc,
-    getDoc
+    updateDoc
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
-// CONFIG
+// CONFIG FIREBASE
 const firebaseConfig = {
     apiKey: "AIzaSyBCtuE513iVtDMtAaXNtrpfPbXvWjUTXR4",
     authDomain: "motoafree.firebaseapp.com",
-    projectId: "motoafree"
+    projectId: "motoafree",
+    storageBucket: "motoafree.firebasestorage.app",
+    messagingSenderId: "727661050460",
+    appId: "1:727661050460:web:72a552bb47b3fe48704499"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -149,133 +365,340 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 let currentUser = null;
+let allCarsData = [];
 
 // AUTH
 onAuthStateChanged(auth, async (user) => {
 
-    if (!user) {
-        alert("Non connecté !");
+    if(!user){
         window.location.href = "login.html";
         return;
     }
 
     currentUser = user;
 
-    document.getElementById("userInfo").innerText =
-        "Connecté : " + user.email;
+    document.getElementById("userInfo").innerHTML =
+        `👤 Connecté : ${user.email}<br>⭐ Rôle : vendeur`;
 
-    loadCars();
+    await loadCars();
+
 });
 
-// ADD
-window.addCar = async function () {
+// AJOUTER VOITURE
+window.addCar = async function(){
 
     let marque = document.getElementById("marque").value;
     let modele = document.getElementById("modele").value;
     let prix = document.getElementById("prix").value;
+    let image = document.getElementById("image").value;
+    let annee = document.getElementById("annee").value;
+    let ville = document.getElementById("ville").value;
+    let carburant = document.getElementById("carburant").value;
 
-    if (!marque || !modele || !prix) {
-        alert("Remplis tous les champs !");
+    if(!marque || !modele || !prix){
+        alert("Remplis les champs obligatoires");
         return;
     }
 
-    await addDoc(collection(db, "cars"), {
+    await addDoc(collection(db,"cars"),{
         marque,
         modele,
         prix,
+        image: image || "https://picsum.photos/500/300",
+        annee,
+        ville,
+        carburant,
         userId: currentUser.uid
     });
 
     alert("Voiture ajoutée 🚗");
 
-    // reset champs
     document.getElementById("marque").value = "";
     document.getElementById("modele").value = "";
     document.getElementById("prix").value = "";
+    document.getElementById("image").value = "";
+    document.getElementById("annee").value = "";
+    document.getElementById("ville").value = "";
 
     loadCars();
 };
 
-// LOAD
-async function loadCars() {
+// LOAD CARS
+async function loadCars(){
 
-    let container = document.getElementById("carList");
-    container.innerHTML = "";
+    const myCarsContainer = document.getElementById("myCars");
+    const allCarsContainer = document.getElementById("allCars");
 
-    const q = query(
-        collection(db, "cars"),
-        where("userId", "==", currentUser.uid)
+    myCarsContainer.innerHTML = "";
+    allCarsContainer.innerHTML = "";
+
+    allCarsData = [];
+
+    // MES VOITURES
+    const myQuery = query(
+        collection(db,"cars"),
+        where("userId","==",currentUser.uid)
     );
 
-    const snapshot = await getDocs(q);
+    const mySnapshot = await getDocs(myQuery);
 
-    snapshot.forEach((docItem) => {
+    mySnapshot.forEach((docItem)=>{
 
-        let car = docItem.data();
+        let car = {
+            id:docItem.id,
+            ...docItem.data()
+        };
+
+        const div = createSellerCarCard(car);
+
+        myCarsContainer.appendChild(div);
+    });
+
+    // TOUTES LES VOITURES
+    const snapshot = await getDocs(collection(db,"cars"));
+
+    snapshot.forEach((docItem)=>{
+
+        let car = {
+            id:docItem.id,
+            ...docItem.data()
+        };
+
+        allCarsData.push(car);
+
+    });
+
+    displayAllCars(allCarsData);
+
+    document.getElementById("stats").innerHTML =
+        `📊 ${allCarsData.length} voiture(s) disponible(s) sur Motoa`;
+
+}
+
+// CREATE MY CAR CARD
+function createSellerCarCard(car){
+
+    let div = document.createElement("div");
+    div.className = "car";
+
+    div.innerHTML = `
+
+        <img src="${car.image || 'https://picsum.photos/500/300'}">
+
+        <div class="car-content">
+
+            <div class="car-title">
+                ${car.marque} ${car.modele}
+            </div>
+
+            <div class="car-price">
+                💰 ${formatPrice(car.prix)} FCFA
+            </div>
+
+            <div class="car-details">
+                <span>📍 ${car.ville || 'N/A'}</span>
+                <span>📅 ${car.annee || 'N/A'}</span>
+                <span>⛽ ${car.carburant || 'N/A'}</span>
+            </div>
+
+            <div class="actions">
+
+                <button class="btn-danger"
+                    onclick="deleteCar('${car.id}')">
+                    Supprimer
+                </button>
+
+                <button class="btn-edit"
+                    onclick="showEdit('${car.id}')">
+                    Modifier
+                </button>
+
+            </div>
+
+            <div id="edit-${car.id}"
+                class="edit-box"
+                style="display:none">
+
+                <input id="m-${car.id}" value="${car.marque}">
+                <input id="mo-${car.id}" value="${car.modele}">
+                <input id="p-${car.id}" value="${car.prix}">
+                <input id="i-${car.id}" value="${car.image || ''}">
+                <input id="a-${car.id}" value="${car.annee || ''}">
+                <input id="v-${car.id}" value="${car.ville || ''}">
+
+                <button class="btn-primary"
+                    onclick="saveEdit('${car.id}')">
+                    Enregistrer
+                </button>
+
+            </div>
+
+        </div>
+    `;
+
+    return div;
+}
+
+// DISPLAY ALL CARS
+function displayAllCars(cars){
+
+    const container = document.getElementById("allCars");
+
+    container.innerHTML = "";
+
+    if(cars.length === 0){
+
+        container.innerHTML = `
+            <div class="empty-state">
+                🚫 Aucune voiture trouvée
+            </div>
+        `;
+
+        return;
+    }
+
+    cars.forEach((car)=>{
 
         let div = document.createElement("div");
         div.className = "car";
 
         div.innerHTML = `
-            <p><b>${car.marque} ${car.modele}</b></p>
-            <p>💰 ${car.prix} FCFA</p>
 
-            <div class="actions">
-                <button class="btn-danger" onclick="deleteCar('${docItem.id}')">Supprimer</button>
-                <button class="btn-edit" onclick="showEdit('${docItem.id}')">Modifier</button>
+            <img src="${car.image || 'https://picsum.photos/500/300'}">
+
+            <div class="car-content">
+
+                <div class="car-title">
+                    ${car.marque} ${car.modele}
+                </div>
+
+                <div class="car-price">
+                    💰 ${formatPrice(car.prix)} FCFA
+                </div>
+
+                <div class="car-details">
+                    <span>📍 ${car.ville || 'N/A'}</span>
+                    <span>📅 ${car.annee || 'N/A'}</span>
+                    <span>⛽ ${car.carburant || 'N/A'}</span>
+                </div>
+
             </div>
 
-            <div id="edit-${docItem.id}" class="edit-box" style="display:none">
-                <input id="m-${docItem.id}" value="${car.marque}">
-                <input id="mo-${docItem.id}" value="${car.modele}">
-                <input id="p-${docItem.id}" value="${car.prix}">
-                <button class="btn-primary" onclick="saveEdit('${docItem.id}')">Enregistrer</button>
-            </div>
         `;
 
         container.appendChild(div);
+
     });
+
 }
 
 // DELETE
-window.deleteCar = async function(id) {
+window.deleteCar = async function(id){
 
-    await deleteDoc(doc(db, "cars", id));
+    await deleteDoc(doc(db,"cars",id));
 
-    alert("Supprimé");
+    alert("Voiture supprimée");
 
     loadCars();
+
 };
 
 // SHOW EDIT
-window.showEdit = function(id) {
+window.showEdit = function(id){
 
-    let el = document.getElementById("edit-" + id);
+    let box = document.getElementById("edit-" + id);
 
-    el.style.display = (el.style.display === "none") ? "block" : "none";
+    box.style.display =
+        box.style.display === "none"
+        ? "block"
+        : "none";
+
 };
 
 // SAVE EDIT
-window.saveEdit = async function(id) {
+window.saveEdit = async function(id){
 
     let marque = document.getElementById("m-" + id).value;
     let modele = document.getElementById("mo-" + id).value;
     let prix = document.getElementById("p-" + id).value;
+    let image = document.getElementById("i-" + id).value;
+    let annee = document.getElementById("a-" + id).value;
+    let ville = document.getElementById("v-" + id).value;
 
-    await updateDoc(doc(db, "cars", id), {
+    await updateDoc(doc(db,"cars",id),{
         marque,
         modele,
-        prix
+        prix,
+        image,
+        annee,
+        ville
     });
 
-    alert("Modifié");
+    alert("Voiture modifiée");
 
     loadCars();
+
 };
 
+// FILTER
+window.filterCars = function(){
+
+    let search =
+        document.getElementById("search")
+        .value
+        .toLowerCase();
+
+    let maxPrice =
+        document.getElementById("maxPrice")
+        .value;
+
+    let filtered = allCarsData.filter((car)=>{
+
+        let fullName =
+            `${car.marque} ${car.modele}`
+            .toLowerCase();
+
+        let okSearch =
+            fullName.includes(search);
+
+        let okPrice =
+            !maxPrice ||
+            Number(car.prix) <= Number(maxPrice);
+
+        return okSearch && okPrice;
+
+    });
+
+    displayAllCars(filtered);
+
+};
+
+// RESET
+window.resetFilter = function(){
+
+    document.getElementById("search").value = "";
+    document.getElementById("maxPrice").value = "";
+
+    displayAllCars(allCarsData);
+
+};
+
+// FORMAT PRICE
+function formatPrice(price){
+
+    if(!price) return "0";
+
+    return price
+        .toString()
+        .replace(/\B(?=(\d{3})+(?!\d))/g," ");
+
+}
+
 // LOGOUT
-window.logout = function () {
+window.logout = function(){
+
     signOut(auth);
+
 };
 
 </script>
