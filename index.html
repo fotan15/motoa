@@ -1,14 +1,12 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Motoa - Marketplace Auto</title>
 
     <style>
 
         body{
-            font-family: Arial;
+            font-family:Arial;
             background:#f0f2f5;
             margin:0;
         }
@@ -26,7 +24,6 @@
         .container{
             width:95%;
             margin:auto;
-            padding-bottom:50px;
         }
 
         input, select{
@@ -72,16 +69,17 @@
             object-fit:cover;
         }
 
-        .carContent{
-            padding:10px;
-        }
-
         .car p{
-            margin:6px 0;
+            margin:8px;
+            font-size:16px;
         }
 
-        h2{
+        .sectionTitle{
             margin-top:25px;
+        }
+
+        #favoritesSection{
+            margin-top:30px;
         }
 
     </style>
@@ -96,40 +94,29 @@
 
     <p id="userInfo">Chargement...</p>
 
-    <button id="loginBtn" onclick="goLogin()">
-        Connexion
-    </button>
-
-    <button id="logoutBtn" class="logoutBtn" onclick="logout()">
-        Déconnexion
-    </button>
+    <button id="loginBtn" onclick="goLogin()">Connexion</button>
+    <button id="logoutBtn" class="logoutBtn" onclick="logout()">Déconnexion</button>
 
 </header>
 
 <div class="container">
 
-    <h2>🚗 Voitures</h2>
+    <h2 class="sectionTitle">🚗 Voitures disponibles</h2>
 
     <input id="search" placeholder="🔍 Rechercher (Toyota, BMW...)">
-
     <input id="maxPrice" placeholder="💰 Prix max">
 
-    <button onclick="filterCars()">
-        Filtrer
-    </button>
-
-    <button onclick="resetFilter()">
-        Reset
-    </button>
+    <button onclick="filterCars()">Filtrer</button>
+    <button onclick="resetFilter()">Reset</button>
 
     <div id="carList"></div>
 
     <!-- FAVORIS -->
-    <div id="favoriteSection" style="display:none">
+    <div id="favoritesSection" style="display:none">
 
         <h2>❤️ Mes favoris</h2>
 
-        <div id="favoriteList"></div>
+        <div id="favoritesList"></div>
 
     </div>
 
@@ -137,7 +124,6 @@
 
 <script type="module">
 
-// FIREBASE
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 
 import {
@@ -158,7 +144,8 @@ import {
     signOut
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
-// CONFIG
+// ================= FIREBASE =================
+
 const firebaseConfig = {
     apiKey: "AIzaSyBCtuE513iVtDMtAaXNtrpfPbXvWjUTXR4",
     authDomain: "motoafree.firebaseapp.com",
@@ -169,17 +156,14 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-
 const db = getFirestore(app);
-
 const auth = getAuth(app);
 
 let currentUser = null;
 let currentRole = null;
 
-let allCars = [];
+// ================= AUTH =================
 
-// AUTH
 onAuthStateChanged(auth, async(user)=>{
 
     const loginBtn = document.getElementById("loginBtn");
@@ -191,23 +175,19 @@ onAuthStateChanged(auth, async(user)=>{
 
         currentRole = null;
 
-        document.getElementById("userInfo").innerText =
-            "Non connecté";
+        document.getElementById("userInfo").innerText = "Non connecté";
 
         loginBtn.style.display = "block";
         logoutBtn.style.display = "none";
 
-        document.getElementById("favoriteSection").style.display = "none";
+        document.getElementById("favoritesSection").style.display = "none";
 
-        await loadCars();
+        loadCars();
 
         return;
     }
 
-    loginBtn.style.display = "none";
-    logoutBtn.style.display = "block";
-
-    // ROLE
+    // récupérer rôle
     const userDoc = await getDoc(doc(db,"users",user.uid));
 
     if(userDoc.exists()){
@@ -217,62 +197,75 @@ onAuthStateChanged(auth, async(user)=>{
     document.getElementById("userInfo").innerText =
         "Connecté : " + user.email + " (" + currentRole + ")";
 
-    // vendeur => seller
+    loginBtn.style.display = "none";
+    logoutBtn.style.display = "block";
+
+    // vendeur -> seller.html
     if(currentRole === "seller"){
         window.location.href = "seller.html";
         return;
     }
 
-    document.getElementById("favoriteSection").style.display = "block";
+    // acheteur
+    document.getElementById("favoritesSection").style.display = "block";
 
-    await loadCars();
-
-    await loadFavorites();
+    loadCars();
+    loadFavorites();
 
 });
 
-// LOAD CARS
-async function loadCars(){
+// ================= LOAD CARS =================
 
-    const snapshot = await getDocs(collection(db,"cars"));
-
-    allCars = [];
-
-    snapshot.forEach((docItem)=>{
-
-        allCars.push({
-            id: docItem.id,
-            ...docItem.data()
-        });
-
-    });
-
-    renderCars(allCars);
-
-}
-
-// RENDER
-async function renderCars(cars){
+window.loadCars = async function(filtered = null){
 
     const container = document.getElementById("carList");
 
     container.innerHTML = "";
 
+    let cars = [];
+
+    // si filtré
+    if(filtered){
+        cars = filtered;
+    }else{
+
+        const snapshot = await getDocs(collection(db,"cars"));
+
+        snapshot.forEach((docItem)=>{
+
+            cars.push({
+                id:docItem.id,
+                ...docItem.data()
+            });
+
+        });
+    }
+
+    // aucune voiture
     if(cars.length === 0){
 
-        container.innerHTML = "<p>Aucune voiture trouvée</p>";
-
+        container.innerHTML = "<p>Aucune voiture trouvée.</p>";
         return;
     }
 
+    // affichage
     for(const car of cars){
 
-        let fav = false;
+        let favoriteText = "🤍 Favori";
 
         if(currentUser){
 
-            fav = await isFavorite(car.id);
+            const favQuery = query(
+                collection(db,"favorites"),
+                where("userId","==",currentUser.uid),
+                where("carId","==",car.id)
+            );
 
+            const favSnapshot = await getDocs(favQuery);
+
+            if(!favSnapshot.empty){
+                favoriteText = "❤️ Retirer";
+            }
         }
 
         const div = document.createElement("div");
@@ -281,79 +274,38 @@ async function renderCars(cars){
 
         div.innerHTML = `
 
-            <img src="${car.image || 'https://picsum.photos/400/200'}">
+            <img src="${car.image || 'https://picsum.photos/500/300'}">
 
-            <div class="carContent">
+            <p><b>${car.marque} ${car.modele}</b></p>
 
-                <p>
-                    <b>${car.marque || ""} ${car.modele || ""}</b>
-                </p>
+            <p>💰 ${car.prix} FCFA</p>
 
-                <p>
-                    💰 ${car.prix || ""} FCFA
-                </p>
+            <p>📍 ${car.ville || "Ville inconnue"}</p>
 
-                <p>
-                    📍 ${car.ville || ""}
-                </p>
+            <p>📅 ${car.annee || "N/A"} | ⛽ ${car.carburant || "N/A"}</p>
 
-                <p>
-                    📅 ${car.annee || ""}
-                </p>
-
-                <p>
-                    ⚙️ ${car.options?.transmission || ""}
-                </p>
-
-                ${
-                    currentUser
-                    ?
-                    `
-                    <button 
-                        class="favoriteBtn"
-                        onclick="toggleFavorite('${car.id}')"
-                    >
-                        ${fav ? "❤️ Retirer des favoris" : "🤍 Ajouter aux favoris"}
-                    </button>
-                    `
-                    :
-                    ""
-                }
-
-            </div>
+            ${
+                currentUser && currentRole === "buyer"
+                ?
+                `<button class="favoriteBtn" onclick="toggleFavorite('${car.id}')">
+                    ${favoriteText}
+                </button>`
+                :
+                ""
+            }
 
         `;
 
         container.appendChild(div);
-
     }
+};
 
-}
+// ================= FAVORIS =================
 
-// FAVORI CHECK
-async function isFavorite(carId){
-
-    if(!currentUser) return false;
-
-    const q = query(
-        collection(db,"favorites"),
-        where("userId","==",currentUser.uid),
-        where("carId","==",carId)
-    );
-
-    const snapshot = await getDocs(q);
-
-    return !snapshot.empty;
-
-}
-
-// FAVORI TOGGLE
 window.toggleFavorite = async function(carId){
 
     if(!currentUser){
-
-        alert("Connecte-toi d'abord");
-
+        alert("Connecte-toi d'abord !");
         return;
     }
 
@@ -365,6 +317,7 @@ window.toggleFavorite = async function(carId){
 
     const snapshot = await getDocs(q);
 
+    // déjà favori
     if(!snapshot.empty){
 
         snapshot.forEach(async(docItem)=>{
@@ -376,50 +329,48 @@ window.toggleFavorite = async function(carId){
     }else{
 
         await addDoc(collection(db,"favorites"),{
-
-            userId: currentUser.uid,
-            carId: carId
-
+            userId:currentUser.uid,
+            carId:carId
         });
 
     }
 
-    await loadCars();
-
-    await loadFavorites();
-
+    loadCars();
+    loadFavorites();
 };
 
-// LOAD FAVORITES
+// ================= LOAD FAVORITES =================
+
 async function loadFavorites(){
 
     if(!currentUser) return;
 
-    const container = document.getElementById("favoriteList");
+    const container = document.getElementById("favoritesList");
 
     container.innerHTML = "";
 
-    const q = query(
+    const favQuery = query(
         collection(db,"favorites"),
         where("userId","==",currentUser.uid)
     );
 
-    const snapshot = await getDocs(q);
+    const favSnapshot = await getDocs(favQuery);
 
-    if(snapshot.empty){
+    if(favSnapshot.empty){
 
-        container.innerHTML = "<p>Aucun favori</p>";
-
+        container.innerHTML = "<p>Aucun favori.</p>";
         return;
     }
 
-    for(const favDoc of snapshot.docs){
+    for(const favDoc of favSnapshot.docs){
 
         const fav = favDoc.data();
 
-        const car = allCars.find(c=>c.id === fav.carId);
+        const carDoc = await getDoc(doc(db,"cars",fav.carId));
 
-        if(!car) continue;
+        if(!carDoc.exists()) continue;
+
+        const car = carDoc.data();
 
         const div = document.createElement("div");
 
@@ -427,82 +378,83 @@ async function loadFavorites(){
 
         div.innerHTML = `
 
-            <img src="${car.image || 'https://picsum.photos/400/200'}">
+            <img src="${car.image || 'https://picsum.photos/500/300'}">
 
-            <div class="carContent">
+            <p><b>${car.marque} ${car.modele}</b></p>
 
-                <p>
-                    <b>${car.marque} ${car.modele}</b>
-                </p>
-
-                <p>
-                    💰 ${car.prix} FCFA
-                </p>
-
-            </div>
+            <p>💰 ${car.prix} FCFA</p>
 
         `;
 
         container.appendChild(div);
-
     }
-
 }
 
-// FILTER
-window.filterCars = function(){
+// ================= FILTRE =================
 
-    const search = document
-        .getElementById("search")
-        .value
-        .toLowerCase();
+window.filterCars = async function(){
 
-    const maxPrice = document
-        .getElementById("maxPrice")
-        .value;
+    const search = document.getElementById("search").value.toLowerCase();
 
-    const filtered = allCars.filter(car=>{
+    const maxPrice = document.getElementById("maxPrice").value;
 
-        const full =
-            (car.marque || "") + " " +
-            (car.modele || "");
+    const snapshot = await getDocs(collection(db,"cars"));
 
-        const matchSearch =
-            full.toLowerCase().includes(search);
+    let filtered = [];
 
-        const matchPrice =
-            !maxPrice ||
-            parseInt(car.prix || 0) <= parseInt(maxPrice);
+    snapshot.forEach((docItem)=>{
 
-        return matchSearch && matchPrice;
+        const car = {
+            id:docItem.id,
+            ...docItem.data()
+        };
+
+        let ok = true;
+
+        if(search){
+
+            const full =
+                (car.marque + " " + car.modele).toLowerCase();
+
+            if(!full.includes(search)){
+                ok = false;
+            }
+        }
+
+        if(maxPrice){
+
+            if(Number(car.prix) > Number(maxPrice)){
+                ok = false;
+            }
+        }
+
+        if(ok){
+            filtered.push(car);
+        }
 
     });
 
-    renderCars(filtered);
-
+    loadCars(filtered);
 };
 
-// RESET
+// ================= RESET =================
+
 window.resetFilter = function(){
 
     document.getElementById("search").value = "";
     document.getElementById("maxPrice").value = "";
 
-    renderCars(allCars);
-
+    loadCars();
 };
 
-// NAV
+// ================= NAV =================
+
 window.goLogin = function(){
-
     window.location.href = "login.html";
-
 };
 
 window.logout = function(){
-
     signOut(auth);
-
 };
 
 </script>
