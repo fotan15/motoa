@@ -1,172 +1,161 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Motoa - Marketplace Auto</title>
 
     <style>
-		body {
-			font-family: Arial;
-			background: #f0f2f5;
-			margin: 0;
-		}
 
-		header {
-			background: #007BFF;
-			color: white;
-			text-align: center;
-			padding: 15px;
-			position: sticky;
-			top: 0;
-		}
+        body{
+            font-family: Arial;
+            background:#f0f2f5;
+            margin:0;
+        }
 
-		.container {
-			width: 95%;
-			margin: auto;
-		}
+        header{
+            background:#007BFF;
+            color:white;
+            text-align:center;
+            padding:15px;
+            position:sticky;
+            top:0;
+            z-index:100;
+        }
 
-		input {
-			width: 100%;
-			padding: 12px;
-			margin: 5px 0;
-			border-radius: 8px;
-			border: 1px solid #ccc;
-		}
+        .container{
+            width:95%;
+            margin:auto;
+            padding-bottom:50px;
+        }
 
-		button {
-			width: 100%;
-			padding: 12px;
-			margin: 5px 0;
-			background: #007BFF;
-			color: white;
-			border: none;
-			border-radius: 8px;
-			font-size: 16px;
-		}
+        input, select{
+            width:100%;
+            padding:12px;
+            margin:5px 0;
+            border-radius:8px;
+            border:1px solid #ccc;
+            box-sizing:border-box;
+        }
 
-		.car {
-			background: white;
-			margin: 10px 0;
-			border-radius: 12px;
-			overflow: hidden;
-			box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-		}
+        button{
+            width:100%;
+            padding:12px;
+            margin:5px 0;
+            background:#007BFF;
+            color:white;
+            border:none;
+            border-radius:8px;
+            font-size:16px;
+            cursor:pointer;
+        }
 
-		.car img {
-			width: 100%;
-			height: 180px;
-			object-fit: cover;
-		}
+        .logoutBtn{
+            background:black;
+        }
 
-		.car p {
-			margin: 8px;
-			font-size: 16px;
-		}
+        .favoriteBtn{
+            background:#ff4081;
+        }
+
+        .car{
+            background:white;
+            margin:15px 0;
+            border-radius:12px;
+            overflow:hidden;
+            box-shadow:0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .car img{
+            width:100%;
+            height:220px;
+            object-fit:cover;
+        }
+
+        .carContent{
+            padding:10px;
+        }
+
+        .car p{
+            margin:6px 0;
+        }
+
+        h2{
+            margin-top:25px;
+        }
+
     </style>
 </head>
 
 <body>
 
 <header>
+
     <h1>Motoa</h1>
     <p>La voiture facile en Afrique</p>
 
     <p id="userInfo">Chargement...</p>
 
-    <button id="loginBtn" onclick="goLogin()">Connexion</button>
-    <button id="logoutBtn" onclick="logout()">Déconnexion</button>
+    <button id="loginBtn" onclick="goLogin()">
+        Connexion
+    </button>
+
+    <button id="logoutBtn" class="logoutBtn" onclick="logout()">
+        Déconnexion
+    </button>
+
 </header>
 
 <div class="container">
 
-	<h2>🚗 Voitures</h2>
+    <h2>🚗 Voitures</h2>
 
-	<input id="search" placeholder="🔍 Rechercher (Toyota, BMW...)">
-	<input id="maxPrice" placeholder="💰 Prix max">
+    <input id="search" placeholder="🔍 Rechercher (Toyota, BMW...)">
 
-	<button onclick="filterCars()">Filtrer</button>
-	<button onclick="resetFilter()">Reset</button>
+    <input id="maxPrice" placeholder="💰 Prix max">
 
-	<div id="carList"></div>
+    <button onclick="filterCars()">
+        Filtrer
+    </button>
 
-	<!-- 🔥 SECTION VENDEUR UNIQUEMENT -->
-	<div id="addSection">
+    <button onclick="resetFilter()">
+        Reset
+    </button>
 
-		<h2>📤 Ajouter une voiture</h2>
+    <div id="carList"></div>
 
-		<input id="marque" placeholder="Marque">
-		<input id="modele" placeholder="Modèle">
-		<input id="prix" placeholder="Prix">
-		<input id="image" placeholder="Image URL">
-		<input id="annee" placeholder="Année">
-		<input id="km" placeholder="Kilométrage">
-		<input id="ville" placeholder="Ville">
+    <!-- FAVORIS -->
+    <div id="favoriteSection" style="display:none">
 
-		<select id="transmission">
-			<option value="Manuelle">Manuelle</option>
-			<option value="Automatique">Automatique</option>
-			<option value="Semi-automatique">Semi-automatique</option>
-		</select>
+        <h2>❤️ Mes favoris</h2>
 
-		<select id="carburant">
-			<option>Essence</option>
-			<option>Diesel</option>
-			<option>Électrique</option>
-		</select>
+        <div id="favoriteList"></div>
 
-		<select id="carrosserie">
-			<option>Berline</option>
-			<option>SUV</option>
-			<option>Citadine</option>
-			<option>Coupé</option>
-			<option>Pickup</option>
-		</select>
-
-		<select id="couleur">
-			<option>Noir</option>
-			<option>Blanc</option>
-			<option>Gris</option>
-			<option>Bleu</option>
-			<option>Rouge</option>
-		</select>
-
-		<select id="sieges">
-			<option>2</option>
-			<option>4</option>
-			<option>5</option>
-			<option>7</option>
-		</select>
-
-		<label><input type="checkbox" value="ABS" class="extra"> ABS</label>
-		<label><input type="checkbox" value="Bluetooth" class="extra"> Bluetooth</label>
-		<label><input type="checkbox" value="GPS" class="extra"> GPS</label>
-		<label><input type="checkbox" value="Caméra" class="extra"> Caméra</label>
-
-		<button onclick="addCar()">Ajouter</button>
-
-	</div>
+    </div>
 
 </div>
 
 <script type="module">
 
+// FIREBASE
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 
-import { 
-    getFirestore, 
-    collection, 
-    addDoc, 
+import {
+    getFirestore,
+    collection,
     getDocs,
-    doc,
-    getDoc,
+    addDoc,
     query,
     where,
-    deleteDoc
+    deleteDoc,
+    doc,
+    getDoc
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
-import { 
-    getAuth, 
-    onAuthStateChanged, 
-    signOut 
+import {
+    getAuth,
+    onAuthStateChanged,
+    signOut
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
 // CONFIG
@@ -180,128 +169,341 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+
 const db = getFirestore(app);
+
 const auth = getAuth(app);
 
 let currentUser = null;
 let currentRole = null;
 
-// ================= AUTH =================
-onAuthStateChanged(auth, async (user) => {
+let allCars = [];
 
-	currentUser = user;
+// AUTH
+onAuthStateChanged(auth, async(user)=>{
 
-	const loginBtn = document.getElementById("loginBtn");
-	const logoutBtn = document.getElementById("logoutBtn");
-	const addSection = document.getElementById("addSection");
+    const loginBtn = document.getElementById("loginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
 
-	if (!user) {
-		document.getElementById("userInfo").innerText = "Non connecté";
-		loginBtn.style.display = "block";
-		logoutBtn.style.display = "none";
-		addSection.style.display = "none";
-		loadCars();
-		return;
-	}
+    currentUser = user;
 
-	const userDoc = await getDoc(doc(db, "users", user.uid));
-	currentRole = userDoc.exists() ? userDoc.data().role : "unknown";
+    if(!user){
 
-	document.getElementById("userInfo").innerText =
-		"Connecté : " + user.email + " (" + currentRole + ")";
+        currentRole = null;
 
-	loginBtn.style.display = "none";
-	logoutBtn.style.display = "block";
+        document.getElementById("userInfo").innerText =
+            "Non connecté";
 
-	if (currentRole === "seller") {
-		addSection.style.display = "block";
-	} else {
-		addSection.style.display = "none";
-	}
+        loginBtn.style.display = "block";
+        logoutBtn.style.display = "none";
 
-	loadCars();
+        document.getElementById("favoriteSection").style.display = "none";
+
+        await loadCars();
+
+        return;
+    }
+
+    loginBtn.style.display = "none";
+    logoutBtn.style.display = "block";
+
+    // ROLE
+    const userDoc = await getDoc(doc(db,"users",user.uid));
+
+    if(userDoc.exists()){
+        currentRole = userDoc.data().role;
+    }
+
+    document.getElementById("userInfo").innerText =
+        "Connecté : " + user.email + " (" + currentRole + ")";
+
+    // vendeur => seller
+    if(currentRole === "seller"){
+        window.location.href = "seller.html";
+        return;
+    }
+
+    document.getElementById("favoriteSection").style.display = "block";
+
+    await loadCars();
+
+    await loadFavorites();
+
 });
 
-// ================= FAVORIS =================
-async function isFavorite(carId) {
+// LOAD CARS
+async function loadCars(){
 
-	if (!currentUser) return false;
+    const snapshot = await getDocs(collection(db,"cars"));
 
-	const q = query(
-		collection(db, "favorites"),
-		where("userId", "==", currentUser.uid),
-		where("carId", "==", carId)
-	);
+    allCars = [];
 
-	const snapshot = await getDocs(q);
+    snapshot.forEach((docItem)=>{
 
-	return !snapshot.empty;
+        allCars.push({
+            id: docItem.id,
+            ...docItem.data()
+        });
+
+    });
+
+    renderCars(allCars);
+
 }
 
-window.toggleFavorite = async function(carId) {
+// RENDER
+async function renderCars(cars){
 
-	if (!currentUser) {
-		alert("Connecte-toi !");
-		return;
-	}
+    const container = document.getElementById("carList");
 
-	const q = query(
-		collection(db, "favorites"),
-		where("userId", "==", currentUser.uid),
-		where("carId", "==", carId)
-	);
+    container.innerHTML = "";
 
-	const snapshot = await getDocs(q);
+    if(cars.length === 0){
 
-	if (!snapshot.empty) {
-		// supprimer
-		snapshot.forEach(async (docItem) => {
-			await deleteDoc(doc(db, "favorites", docItem.id));
-		});
-	} else {
-		// ajouter
-		await addDoc(collection(db, "favorites"), {
-			userId: currentUser.uid,
-			carId: carId
-		});
-	}
+        container.innerHTML = "<p>Aucune voiture trouvée</p>";
 
-	loadCars();
+        return;
+    }
+
+    for(const car of cars){
+
+        let fav = false;
+
+        if(currentUser){
+
+            fav = await isFavorite(car.id);
+
+        }
+
+        const div = document.createElement("div");
+
+        div.className = "car";
+
+        div.innerHTML = `
+
+            <img src="${car.image || 'https://picsum.photos/400/200'}">
+
+            <div class="carContent">
+
+                <p>
+                    <b>${car.marque || ""} ${car.modele || ""}</b>
+                </p>
+
+                <p>
+                    💰 ${car.prix || ""} FCFA
+                </p>
+
+                <p>
+                    📍 ${car.ville || ""}
+                </p>
+
+                <p>
+                    📅 ${car.annee || ""}
+                </p>
+
+                <p>
+                    ⚙️ ${car.options?.transmission || ""}
+                </p>
+
+                ${
+                    currentUser
+                    ?
+                    `
+                    <button 
+                        class="favoriteBtn"
+                        onclick="toggleFavorite('${car.id}')"
+                    >
+                        ${fav ? "❤️ Retirer des favoris" : "🤍 Ajouter aux favoris"}
+                    </button>
+                    `
+                    :
+                    ""
+                }
+
+            </div>
+
+        `;
+
+        container.appendChild(div);
+
+    }
+
+}
+
+// FAVORI CHECK
+async function isFavorite(carId){
+
+    if(!currentUser) return false;
+
+    const q = query(
+        collection(db,"favorites"),
+        where("userId","==",currentUser.uid),
+        where("carId","==",carId)
+    );
+
+    const snapshot = await getDocs(q);
+
+    return !snapshot.empty;
+
+}
+
+// FAVORI TOGGLE
+window.toggleFavorite = async function(carId){
+
+    if(!currentUser){
+
+        alert("Connecte-toi d'abord");
+
+        return;
+    }
+
+    const q = query(
+        collection(db,"favorites"),
+        where("userId","==",currentUser.uid),
+        where("carId","==",carId)
+    );
+
+    const snapshot = await getDocs(q);
+
+    if(!snapshot.empty){
+
+        snapshot.forEach(async(docItem)=>{
+
+            await deleteDoc(doc(db,"favorites",docItem.id));
+
+        });
+
+    }else{
+
+        await addDoc(collection(db,"favorites"),{
+
+            userId: currentUser.uid,
+            carId: carId
+
+        });
+
+    }
+
+    await loadCars();
+
+    await loadFavorites();
+
 };
 
-// ================= LOAD =================
-window.loadCars = async function () {
+// LOAD FAVORITES
+async function loadFavorites(){
 
-	let container = document.getElementById("carList");
-	container.innerHTML = "";
+    if(!currentUser) return;
 
-	const snapshot = await getDocs(collection(db, "cars"));
+    const container = document.getElementById("favoriteList");
 
-	for (const docItem of snapshot.docs) {
+    container.innerHTML = "";
 
-		let car = docItem.data();
-		let fav = await isFavorite(docItem.id);
+    const q = query(
+        collection(db,"favorites"),
+        where("userId","==",currentUser.uid)
+    );
 
-		let div = document.createElement("div");
-		div.className = "car";
+    const snapshot = await getDocs(q);
 
-		div.innerHTML = `
-			<img src="${car.image}">
-			<p><b>${car.marque} ${car.modele}</b></p>
-			<p>💰 ${car.prix} FCFA</p>
+    if(snapshot.empty){
 
-			<button onclick="toggleFavorite('${docItem.id}')">
-				${fav ? "❤️ Retirer" : "🤍 Favori"}
-			</button>
-		`;
+        container.innerHTML = "<p>Aucun favori</p>";
 
-		container.appendChild(div);
-	}
+        return;
+    }
+
+    for(const favDoc of snapshot.docs){
+
+        const fav = favDoc.data();
+
+        const car = allCars.find(c=>c.id === fav.carId);
+
+        if(!car) continue;
+
+        const div = document.createElement("div");
+
+        div.className = "car";
+
+        div.innerHTML = `
+
+            <img src="${car.image || 'https://picsum.photos/400/200'}">
+
+            <div class="carContent">
+
+                <p>
+                    <b>${car.marque} ${car.modele}</b>
+                </p>
+
+                <p>
+                    💰 ${car.prix} FCFA
+                </p>
+
+            </div>
+
+        `;
+
+        container.appendChild(div);
+
+    }
+
+}
+
+// FILTER
+window.filterCars = function(){
+
+    const search = document
+        .getElementById("search")
+        .value
+        .toLowerCase();
+
+    const maxPrice = document
+        .getElementById("maxPrice")
+        .value;
+
+    const filtered = allCars.filter(car=>{
+
+        const full =
+            (car.marque || "") + " " +
+            (car.modele || "");
+
+        const matchSearch =
+            full.toLowerCase().includes(search);
+
+        const matchPrice =
+            !maxPrice ||
+            parseInt(car.prix || 0) <= parseInt(maxPrice);
+
+        return matchSearch && matchPrice;
+
+    });
+
+    renderCars(filtered);
+
+};
+
+// RESET
+window.resetFilter = function(){
+
+    document.getElementById("search").value = "";
+    document.getElementById("maxPrice").value = "";
+
+    renderCars(allCars);
+
 };
 
 // NAV
-window.goLogin = () => window.location.href = "login.html";
-window.logout = () => signOut(auth);
+window.goLogin = function(){
+
+    window.location.href = "login.html";
+
+};
+
+window.logout = function(){
+
+    signOut(auth);
+
+};
 
 </script>
 
